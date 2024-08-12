@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta username="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원 상세</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<h1>회원 상세</h1>
+<div>
+    <p><strong>이름:</strong> ${memberDto.username}</p>
+    <p><strong>나이:</strong> ${memberDto.age}</p>
+    <p><strong>주소:</strong> ${memberDto.address}</p>
+    <p><strong>등급:</strong> ${memberDto.grade}</p>
+    <p><strong>결제 방법:</strong> ${memberDto.paymentMethod}</p>
+    <p><strong>회원 상태:</strong> ${memberDto.memberStatus}</p>
+</div>
+<div>
+    <a href="/members/update/${memberDto.id}">회원 수정</a>
+    <a href="/members/delete/${memberDto.id}">회원 삭제</a>
+    <a href="/members">회원 목록으로 돌아가기</a>
+</div>
+</body>
+</html>

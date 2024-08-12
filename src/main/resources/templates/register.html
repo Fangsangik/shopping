@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>회원가입</title>
+</head>
+<body>
+<h2>회원가입</h2>
+
+<form th:action="@{/register}" method="post" th:object="${memberDto}">
+    <label for="id">ID:</label>
+    <input type="text" id="id" name="id" th:value="*{id}">
+    <br>
+    <label for="username">이름:</label>
+    <input type="text" id="username" name="username" th:value="*{username}" required>
+    <br>
+    <label for="age">나이:</label>
+    <input type="number" id="age" name="age" th:value="*{age}" required>
+    <br>
+    <label for="password">비밀번호:</label>
+    <input type="password" id="password" name="password" th:value="*{password}" required>
+    <br>
+    <label for="address">주소:</label>
+    <input type="text" id="address" name="address" th:value="*{address}">
+    <br>
+    <label for="birth">생일:</label>
+    <input type="datetime-local" id="birth" name="birth" th:value="*{birth}">
+    <br>
+    <label for="grade">등급:</label>
+    <select id="grade" name="grade" th:value="*{grade}">
+        <option value="BASIC" th:text="'BASIC'" th:selected="${memberDto.grade == 'BASIC'}">BASIC</option>
+        <option value="VIP" th:text="'VIP'" th:selected="${memberDto.grade == 'VIP'}">VIP</option>
+    </select>
+    <br>
+    <label for="paymentMethod">결제 방법:</label>
+    <select id="paymentMethod" name="paymentMethod" th:value="*{paymentMethod}">
+        <option value="CREDIT_CARD" th:text="'신용카드'" th:selected="${memberDto.paymentMethod == 'CREDIT_CARD'}">신용카드</option>
+        <option value="ACCOUNT_TRANSFER" th:text="'계좌이체'" th:selected="${memberDto.paymentMethod == 'ACCOUNT_TRANSFER'}">계좌이체</option>
+    </select>
+    <br>
+    <label for="memberStatus">회원 상태:</label>
+    <select id="memberStatus" name="memberStatus" th:value="*{memberStatus}">
+        <option value="ACTIVE" th:text="'활성'" th:selected="${memberDto.memberStatus == 'ACTIVE'}">활성</option>
+        <option value="UN_ACTIVE" th:text="'비활성'" th:selected="${memberDto.memberStatus == 'UN_ACTIVE'}">비활성</option>
+    </select>
+    <br>
+    <button type="submit">회원가입</button>
+</form>
+
+<!-- 오류 메시지 표시 -->
+<div th:if="${error}">
+    <p style="color: red;">${error}</p>
+</div>
+</body>
+</html>
