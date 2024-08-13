@@ -24,6 +24,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
 
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
     @Autowired
     public SecurityConfig(@Lazy UserDetailsService userDetailsService, @Lazy PasswordEncoder passwordEncoder) {
         this.userDetailsService = userDetailsService;
@@ -34,11 +39,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/register").permitAll()
+                .antMatchers("/register", "/login").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
                 .loginPage("/login")
+                .usernameParameter("userId") // 이 부분이 폼에서 전달받는 필드명과 일치해야 함
+                .passwordParameter("password")
                 .defaultSuccessUrl("/members", true)
                 .failureUrl("/login?error")
                 .permitAll()
@@ -46,22 +53,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .logout()
                 .permitAll();
     }
-
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
                 .userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder);
-    }
-
-    public void registerMember(MemberDto memberDto) {
-        String encodedPassword = passwordEncoder.encode(memberDto.getPassword());
-        memberDto.setPassword(encodedPassword);
-        // 회원 저장 로직
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 }
