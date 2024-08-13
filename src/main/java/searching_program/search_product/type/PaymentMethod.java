@@ -1,8 +1,8 @@
 package searching_program.search_product.type;
 
 public enum PaymentMethod {
-    CREDIT("신용카드"),
-    ACCOUNT_TRANSFER("통장입금");
+    CREDIT_CARD("CREDIT_CARD"),
+    ACCOUNT_TRANSFER("ACCOUNT_TRANSFER");
 
     private final String message;
 
