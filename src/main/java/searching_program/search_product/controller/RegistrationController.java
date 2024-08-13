@@ -1,6 +1,7 @@
 package searching_program.search_product.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -12,6 +13,7 @@ import searching_program.search_product.service.MemberService;
 
 import javax.validation.Valid;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class RegistrationController {
@@ -31,16 +33,18 @@ public class RegistrationController {
             Model model) {
 
         if (bindingResult.hasErrors()) {
+            log.warn("회원가입 유효성 검사 실패: {}", bindingResult.getAllErrors());
             return "register";
         }
 
         try {
-
             memberService.createMember(memberDto);
             return "redirect:/login";
         } catch (IllegalArgumentException e) {
+            log.error("회원가입 실패: {}", e.getMessage());
             model.addAttribute("error", e.getMessage());
             return "register";
         }
     }
+
 }
