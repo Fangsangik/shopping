@@ -1,6 +1,7 @@
 package searching_program.search_product.domain;
 
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 import searching_program.search_product.type.Grade;
 import searching_program.search_product.type.MemberStatus;
 import searching_program.search_product.type.PaymentMethod;
@@ -25,17 +26,26 @@ public class Member {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Item> items = new ArrayList<>();
 
+    @Column(unique = true, nullable = false)
+    private String userId; // 사용자가 입력하는 ID
+
     private String username;
     private int age;
     private String password;
     private String address;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime birth;
+
     private LocalDateTime createdAt;    // 엔티티 필드 이름
     private LocalDateTime deletedAt;    // 엔티티 필드 이름
+
+    private boolean lock;
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
+    @Enumerated(EnumType.STRING)
     private Grade grade;
 
     @Enumerated(EnumType.STRING)

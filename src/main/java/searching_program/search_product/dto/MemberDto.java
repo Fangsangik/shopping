@@ -15,9 +15,11 @@ public class MemberDto {
 
     private Long id; // 식별자 필드 추가
 
+    private String userId;
     private String username;
     private int age;
     private String password;
+    private boolean lock;
     private String address;
     private LocalDateTime birth;
     private LocalDateTime createdAt;
