@@ -13,6 +13,16 @@ import java.util.List;
 import java.util.Optional;
 
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 @Transactional
@@ -22,20 +32,17 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
 
+    // 비밀번호 해시화 메서드
+    private String encodePassword(String rawPassword) {
+        return passwordEncoder.encode(rawPassword);
+    }
+
     public MemberDto save(MemberDto memberDto) {
+        // 비밀번호 해시화
+        memberDto.setPassword(encodePassword(memberDto.getPassword()));
+
         // DTO를 엔티티로 변환
-        Member member = Member.builder()
-                .username(memberDto.getUsername())
-                .age(memberDto.getAge())
-                .address(memberDto.getAddress())
-                .password(passwordEncoder.encode(memberDto.getPassword()))
-                .birth(memberDto.getBirth())
-                .createdAt(memberDto.getCreatedAt())
-                .deletedAt(memberDto.getDeletedAt())
-                .paymentMethod(memberDto.getPaymentMethod())
-                .grade(memberDto.getGrade())
-                .memberStatus(memberDto.getMemberStatus())
-                .build();
+        Member member = convertToEntity(memberDto);
 
         // 엔티티 저장
         Member savedMember = memberRepository.save(member);
@@ -45,56 +52,27 @@ public class MemberService {
     }
 
     public MemberDto createMember(MemberDto memberDto) {
-        log.info("회원 생성 요청: ID={}", memberDto.getId());
+        log.info("회원 생성 요청: userId={}", memberDto.getUserId());
 
-        if (memberRepository.existsById(memberDto.getId())) {
-            log.error("회원 생성 실패: ID {}는 이미 존재합니다.", memberDto.getId());
+        // userId 중복 확인
+        if (memberRepository.existsByUserId(memberDto.getUserId())) {
+            log.error("회원 생성 실패: userId {}는 이미 존재합니다.", memberDto.getUserId());
             throw new IllegalArgumentException("아이디 값이 이미 존재합니다.");
         }
 
         validateMemberDto(memberDto);
 
+        // 비밀번호 해시화
         String encodedPassword = passwordEncoder.encode(memberDto.getPassword());
-        Member newMember = Member.builder()
-                .username(memberDto.getUsername())
-                .age(memberDto.getAge())
-                .address(memberDto.getAddress())
-                .password(encodedPassword)
-                .grade(memberDto.getGrade())
-                .paymentMethod(memberDto.getPaymentMethod())
-                .memberStatus(memberDto.getMemberStatus())
-                .build();
+        log.info("Encoded password: {}", encodedPassword);
+        memberDto.setPassword(encodedPassword);
 
+        Member newMember = convertToEntity(memberDto);
         Member savedMember = memberRepository.save(newMember);
         log.info("회원 생성 성공: ID={}", savedMember.getId());
         return convertToDto(savedMember);
     }
 
-    private void validateMemberDto(MemberDto memberDto) {
-        if (memberDto.getUsername() == null || memberDto.getUsername().isEmpty()) {
-            log.error("유효성 검사 실패: 이름은 필수 입력 사항입니다.");
-            throw new IllegalArgumentException("이름은 필수 입력 사항입니다.");
-        }
-        if (memberDto.getAge() < 0) {
-            log.error("유효성 검사 실패: 나이는 음수가 될 수 없습니다.");
-            throw new IllegalArgumentException("나이는 음수가 될 수 없습니다.");
-        }
-        if (memberDto.getId() == null) {
-            log.error("유효성 검사 실패: ID 값은 Null일 수 없습니다.");
-            throw new IllegalArgumentException("ID 값은 Null일 수 없습니다.");
-        }
-    }
-
-    public List<MemberDto> findAll() {
-        log.info("모든 회원 조회 요청");
-        List<Member> members = memberRepository.findAll();
-        return members.stream().map(this::convertToDto).toList();
-    }
-
-    public Optional<MemberDto> findById(Long id) {
-        log.info("회원 조회 요청: ID={}", id);
-        return memberRepository.findById(id).map(this::convertToDto);
-    }
 
     public MemberDto updateMember(Long id, MemberDto memberDto) {
         log.info("회원 업데이트 요청: ID={}", id);
@@ -110,14 +88,16 @@ public class MemberService {
                     return new IllegalArgumentException("회원이 존재하지 않습니다.");
                 });
 
+        existingMember.setUserId(memberDto.getUserId());
         existingMember.setUsername(memberDto.getUsername());
         existingMember.setAddress(memberDto.getAddress());
         existingMember.setAge(memberDto.getAge());
         existingMember.setGrade(memberDto.getGrade());
         existingMember.setPaymentMethod(memberDto.getPaymentMethod());
 
+        // 비밀번호가 제공된 경우 해시화하여 저장
         if (memberDto.getPassword() != null && !memberDto.getPassword().isEmpty()) {
-            existingMember.setPassword(passwordEncoder.encode(memberDto.getPassword()));
+            existingMember.setPassword(encodePassword(memberDto.getPassword()));
         }
 
         Member updatedMember = memberRepository.save(existingMember);
@@ -143,16 +123,32 @@ public class MemberService {
         log.info("회원 삭제 성공: ID={}", id);
     }
 
+    public List<MemberDto> findAll() {
+        log.info("모든 회원 조회 요청");
+        List<Member> members = memberRepository.findAll();
+        return members.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+    public Optional<MemberDto> findById(Long id) {
+        log.info("회원 조회 요청: ID={}", id);
+        return memberRepository.findById(id).map(this::convertToDto);
+    }
+
+    public Optional<MemberDto> findByUserId(String userId) {
+        log.info("회원 조회 요청: userId={}", userId);
+        return memberRepository.findByUserId(userId).map(this::convertToDto);
+    }
+
     public List<MemberDto> findByName(String name) {
         log.info("이름으로 회원 조회 요청: 이름={}", name);
         List<Member> members = memberRepository.findByUsernameContaining(name);
-        return members.stream().map(this::convertToDto).toList();
+        return members.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
     public List<MemberDto> findByAgeGreaterThan(int age) {
         log.info("나이로 회원 조회 요청: 나이={}", age);
         List<Member> members = memberRepository.findByAgeGreaterThan(age);
-        return members.stream().map(this::convertToDto).toList();
+        return members.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
     public void deactivateMember(Long id) {
@@ -194,14 +190,37 @@ public class MemberService {
             throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
         }
 
-        member.setPassword(passwordEncoder.encode(newPassword));
+        member.setPassword(encodePassword(newPassword));
         memberRepository.save(member);
         log.info("비밀번호 변경 성공: ID={}", id);
+    }
+
+    public void lockMember(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+        member.setLock(true);
+        memberRepository.save(member);
+    }
+
+    private void validateMemberDto(MemberDto memberDto) {
+        if (memberDto.getUsername() == null || memberDto.getUsername().isEmpty()) {
+            log.error("유효성 검사 실패: 이름은 필수 입력 사항입니다.");
+            throw new IllegalArgumentException("이름은 필수 입력 사항입니다.");
+        }
+        if (memberDto.getAge() < 0) {
+            log.error("유효성 검사 실패: 나이는 음수가 될 수 없습니다.");
+            throw new IllegalArgumentException("나이는 음수가 될 수 없습니다.");
+        }
+        if (memberDto.getUserId() == null || memberDto.getUserId().isEmpty()) {
+            log.error("유효성 검사 실패: userId 값은 Null일 수 없습니다.");
+            throw new IllegalArgumentException("userId 값은 Null일 수 없습니다.");
+        }
     }
 
     private MemberDto convertToDto(Member member) {
         return MemberDto.builder()
                 .id(member.getId())
+                .userId(member.getUserId())
                 .username(member.getUsername())
                 .age(member.getAge())
                 .address(member.getAddress())
@@ -210,5 +229,18 @@ public class MemberService {
                 .memberStatus(member.getMemberStatus())
                 .build();
     }
-    // 이메일 인증 서비스 구현
+
+    private Member convertToEntity(MemberDto memberDto) {
+        return Member.builder()
+                .id(memberDto.getId())
+                .userId(memberDto.getUserId())
+                .username(memberDto.getUsername())
+                .age(memberDto.getAge())
+                .address(memberDto.getAddress())
+                .grade(memberDto.getGrade())
+                .paymentMethod(memberDto.getPaymentMethod())
+                .memberStatus(memberDto.getMemberStatus())
+                .password(memberDto.getPassword())
+                .build();
+    }
 }
