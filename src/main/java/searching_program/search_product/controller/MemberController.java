@@ -11,6 +11,7 @@ import searching_program.search_product.dto.MemberDto;
 import searching_program.search_product.service.MemberService;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -20,28 +21,28 @@ public class MemberController {
 
     private final MemberService memberService;
 
+    @GetMapping
+    public String getAllMembers(Model model) {
+        List<MemberDto> members = memberService.findAll();
+        model.addAttribute("members", members);
+        return "memberList"; // memberList.html 템플릿이 존재해야 함
+    }
+
     @GetMapping("/{id}")
-    public String getMemberById(
-            @PathVariable Long id,
-            Model model) {
-
-        try {
-            MemberDto memberDto = memberService.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("아이디가 존재하지 않습니다."));
-
-            model.addAttribute("memberDto", memberDto);
-            return "memberDetail";
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("error", e.getMessage());
-            return "memberList";
+    public String getMemberById(@PathVariable Long id, Model model) {
+        Optional<MemberDto> memberDtoOptional = memberService.findById(id);
+        if (memberDtoOptional.isPresent()) {
+            model.addAttribute("memberDto", memberDtoOptional.get());
+        } else {
+            model.addAttribute("error", "회원 정보를 찾을 수 없습니다.");
         }
+        return "memberDetail";
     }
 
     @GetMapping("/update/{id}")
     public String showUpdateMemberForm(@PathVariable Long id, Model model) {
         MemberDto memberDto = memberService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("아이디가 존재하지 않습니다."));
-
         model.addAttribute("memberDto", memberDto);
         return "updateForm";
     }
@@ -53,8 +54,7 @@ public class MemberController {
             BindingResult bindingResult,
             Model model) {
 
-        // ID가 DTO와 일치하는지 확인
-        if (id == null || !id.equals(memberDto.getId())) {
+        if (!id.equals(memberDto.getId())) {
             model.addAttribute("error", "ID가 일치하지 않습니다.");
             return "updateForm";
         }
@@ -72,7 +72,7 @@ public class MemberController {
         }
     }
 
-    @PostMapping("/delete/{id}")
+    @DeleteMapping("/delete/{id}")
     public String deleteMember(
             @PathVariable Long id,
             @RequestParam String password,
