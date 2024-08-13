@@ -8,18 +8,23 @@
 
 <!-- 로그인 폼 -->
 <form th:action="@{/login}" method="post">
-    <label for="userusername">사용자명:</label>
-    <input type="text" id="userusername" username="userusername" required>
+    <!-- 사용자 ID 입력 필드 -->
+    <label for="userId">사용자 ID:</label>
+    <input type="text" id="userId" name="userId" required>
     <br>
+
+    <!-- 비밀번호 입력 필드 -->
     <label for="password">비밀번호:</label>
-    <input type="password" id="password" username="password" required>
+    <input type="password" id="password" name="password" required>
     <br>
+
+    <!-- 로그인 버튼 -->
     <button type="submit">로그인</button>
 </form>
 
 <!-- 로그인 실패 메시지 표시 -->
-<div th:if="${param.error}">
-    <p style="color: red;">로그인 실패. 사용자명이나 비밀번호를 확인하세요.</p>
+<div th:if="${error}">
+    <p style="color: red;">로그인 실패. 사용자 ID나 비밀번호를 확인하세요.</p>
 </div>
 
 <hr>

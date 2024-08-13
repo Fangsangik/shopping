@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원 상세</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<h1>회원 상세 정보</h1>
+
+<table>
+    <tr>
+        <th>이름</th>
+        <td th:text="${memberDto.username}"></td>
+    </tr>
+    <tr>
+        <th>나이</th>
+        <td th:text="${memberDto.age}"></td>
+    </tr>
+    <tr>
+        <th>주소</th>
+        <td th:text="${memberDto.address}"></td>
+    </tr>
+    <tr>
+        <th>등급</th>
+        <td th:text="${memberDto.grade}"></td>
+    </tr>
+    <tr>
+        <th>결제 방법</th>
+        <td th:text="${memberDto.paymentMethod}"></td>
+    </tr>
+    <tr>
+        <th>회원 상태</th>
+        <td th:text="${memberDto.memberStatus}"></td>
+    </tr>
+</table>
+
+<div>
+    <a th:href="@{/members/update/{id}(id=${memberDto.id})}">회원 수정</a>
+    <a th:href="@{/members/delete/{id}(id=${memberDto.id})}">회원 삭제</a>
+    <a th:href="@{/members}">회원 목록으로 돌아가기</a>
+</div>
+</body>
+</html>
