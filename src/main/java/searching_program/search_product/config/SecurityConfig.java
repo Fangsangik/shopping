@@ -30,7 +30,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Autowired
-    public SecurityConfig(@Lazy UserDetailsService userDetailsService, @Lazy PasswordEncoder passwordEncoder) {
+    public SecurityConfig(UserDetailsService userDetailsService, @Lazy PasswordEncoder passwordEncoder) {
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
     }
@@ -38,8 +38,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                //.csrf().disable() -> 개발 환경에서만 disable
                 .authorizeRequests()
                 .antMatchers("/register", "/login").permitAll()
+                // 나중에 ADMIN 역할을 가진 사용자만 접근 가능하도록 변경
+                .antMatchers("/delete/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
