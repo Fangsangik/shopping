@@ -26,6 +26,15 @@ public class Member {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Item> items = new ArrayList<>();
 
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<ItemFavorite> itemFavorites = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<Review> reviews = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<Order> orders = new ArrayList<>();
+
     @Column(unique = true, nullable = false)
     private String userId; // 사용자가 입력하는 ID
 
@@ -39,6 +48,7 @@ public class Member {
 
     private LocalDateTime createdAt;    // 엔티티 필드 이름
     private LocalDateTime deletedAt;    // 엔티티 필드 이름
+
 
     private boolean lock;
 
