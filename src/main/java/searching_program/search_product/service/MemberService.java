@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import searching_program.search_product.domain.Member;
+import searching_program.search_product.dto.DtoEntityConverter;
 import searching_program.search_product.dto.MemberDto;
 import searching_program.search_product.repository.MemberRepository;
 
@@ -20,6 +21,7 @@ public class MemberService {
 
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
+    private final DtoEntityConverter converter;
 
     // 비밀번호 해시화 메서드
     private String encodePassword(String rawPassword) {
@@ -32,13 +34,13 @@ public class MemberService {
         memberDto.setPassword(encodePassword(memberDto.getPassword()));
 
         // DTO를 엔티티로 변환
-        Member member = convertToEntity(memberDto);
+        Member member = converter.convertToMemberEntity(memberDto);
 
         // 엔티티 저장
         Member savedMember = memberRepository.save(member);
 
         // 저장된 엔티티를 DTO로 변환하여 반환
-        return convertToDto(savedMember);
+        return converter.convertToMemberDto(savedMember);
     }
 
     @Transactional
@@ -62,10 +64,10 @@ public class MemberService {
         log.info("Encoded password: {}", encodedPassword);
         memberDto.setPassword(encodedPassword);
 
-        Member newMember = convertToEntity(memberDto);
+        Member newMember = converter.convertToMemberEntity(memberDto);
         Member savedMember = memberRepository.save(newMember);
         log.info("회원 생성 성공: ID={}", savedMember.getId());
-        return convertToDto(savedMember);
+        return converter.convertToMemberDto(savedMember);
 
     }
 
@@ -101,7 +103,7 @@ public class MemberService {
 
         Member updatedMember = memberRepository.save(existingMember);
         log.info("회원 업데이트 성공: ID={}", updatedMember.getId());
-        return convertToDto(updatedMember);
+        return converter.convertToMemberDto(updatedMember);
     }
 
     private static void updateMemberFields(MemberDto memberDto, Member existingMember) {
@@ -141,33 +143,33 @@ public class MemberService {
     public List<MemberDto> findAll() {
         log.info("모든 회원 조회 요청");
         List<Member> members = memberRepository.findAll();
-        return members.stream().map(this::convertToDto).collect(Collectors.toList());
+        return members.stream().map(converter::convertToMemberDto).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public Optional<MemberDto> findById(Long id) {
         log.info("회원 조회 요청: ID={}", id);
-        return memberRepository.findById(id).map(this::convertToDto);
+        return memberRepository.findById(id).map(converter::convertToMemberDto);
     }
 
     @Transactional(readOnly = true)
     public Optional<MemberDto> findByUserId(String userId) {
         log.info("회원 조회 요청: userId={}", userId);
-        return memberRepository.findByUserId(userId).map(this::convertToDto);
+        return memberRepository.findByUserId(userId).map(converter::convertToMemberDto);
     }
 
     @Transactional(readOnly = true)
     public List<MemberDto> findByName(String name) {
         log.info("이름으로 회원 조회 요청: 이름={}", name);
         List<Member> members = memberRepository.findByUsernameContaining(name);
-        return members.stream().map(this::convertToDto).collect(Collectors.toList());
+        return members.stream().map(converter::convertToMemberDto).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<MemberDto> findByAgeGreaterThan(int age) {
         log.info("나이로 회원 조회 요청: 나이={}", age);
         List<Member> members = memberRepository.findByAgeGreaterThan(age);
-        return members.stream().map(this::convertToDto).collect(Collectors.toList());
+        return members.stream().map(converter::convertToMemberDto).collect(Collectors.toList());
     }
 
     @Transactional
@@ -260,32 +262,5 @@ public class MemberService {
             log.error("유효성 검사 실패: userId 값은 Null일 수 없습니다.");
             throw new IllegalArgumentException("userId 값은 Null일 수 없습니다.");
         }
-    }
-
-    private MemberDto convertToDto(Member member) {
-        return MemberDto.builder()
-                .id(member.getId())
-                .userId(member.getUserId())
-                .username(member.getUsername())
-                .age(member.getAge())
-                .address(member.getAddress())
-                .grade(member.getGrade())
-                .paymentMethod(member.getPaymentMethod())
-                .memberStatus(member.getMemberStatus())
-                .build();
-    }
-
-    private Member convertToEntity(MemberDto memberDto) {
-        return Member.builder()
-                .id(memberDto.getId())
-                .userId(memberDto.getUserId())
-                .username(memberDto.getUsername())
-                .age(memberDto.getAge())
-                .address(memberDto.getAddress())
-                .grade(memberDto.getGrade())
-                .paymentMethod(memberDto.getPaymentMethod())
-                .memberStatus(memberDto.getMemberStatus())
-                .password(memberDto.getPassword())
-                .build();
     }
 }
