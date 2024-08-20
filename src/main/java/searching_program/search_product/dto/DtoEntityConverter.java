@@ -30,9 +30,9 @@ public class DtoEntityConverter {
     public Item convertToItemEntity(ItemDto itemDto) {
         return Item.builder()
                 .id(itemDto.getId())
+                .itemPrice(itemDto.getItemPrice())
                 .lowPrice(itemDto.getLowPrice())
                 .maxPrice(itemDto.getMaxPrice())
-                .price(itemDto.getPrice())
                 .image(itemDto.getImage())
                 .itemName(itemDto.getItemName())
                 .link(itemDto.getLink())
@@ -48,7 +48,7 @@ public class DtoEntityConverter {
                 .build();
     }
 
-    public Shipment convertToShipmentEntity(ShipmentDto shipmentDto, Order order){
+    public Shipment convertToShipmentEntity(ShipmentDto shipmentDto, Orders order){
         return Shipment.builder()
                 .curLocation(shipmentDto.getCurLocation())
                 .estimatedDeliveryDate(shipmentDto.getEstimatedDeliveryDate())
@@ -58,17 +58,19 @@ public class DtoEntityConverter {
                 .build();
     }
 
-    public Order convertToOrderEntity(OrderDto orderDto, Member member) {
-        return Order.builder()
+    public Orders convertToOrderEntity(OrderDto orderDto, Member member) {
+        return Orders.builder()
                 .orderDate(orderDto.getOrderDate())
-                .status(orderDto.getOrderStatus())
+                .status(orderDto.getStatus())
                 .id(orderDto.getId())
+                .statusHistory(new ArrayList<>())
                 .member(member)
+                .createdDate(orderDto.getCreatedDate())
                 .orderItems(new ArrayList<>())
                 .build();
     }
 
-    public OrderItem convertToOrderItemEntity(OrderItemDto orderItemDto, Order order, Item item) {
+    public OrderItem convertToOrderItemEntity(OrderItemDto orderItemDto, Orders order, Item item) {
         return OrderItem.builder()
                 .quantity(orderItemDto.getQuantity())
                 .order(order)
@@ -101,6 +103,7 @@ public class DtoEntityConverter {
         return MemberDto.builder()
                 .id(member.getId())
                 .userId(member.getUserId())
+                .password(member.getPassword())
                 .username(member.getUsername())
                 .age(member.getAge())
                 .address(member.getAddress())
@@ -115,7 +118,7 @@ public class DtoEntityConverter {
                 .id(item.getId())
                 .image(item.getImage())
                 .itemName(item.getItemName())
-                .price(item.getPrice())
+                .itemPrice(item.getItemPrice())
                 .maxPrice(item.getMaxPrice())
                 .lowPrice(item.getLowPrice())
                 .link(item.getLink())
@@ -138,16 +141,22 @@ public class DtoEntityConverter {
                 .build();
     }
 
-    public OrderDto convertToOrderDto(Order order) {
+    public OrderDto convertToOrderDto(Orders order) {
         List<OrderItemDto> orderItemDtos = order.getOrderItems().stream()
                 .map(this::convertToOrderItemDto)
+                .collect(Collectors.toList());
+
+        List<OrderStatusHistoryDto> statusHistoryDtos = order.getStatusHistory().stream()
+                .map(this::convertToOrderStatusHistoryDto)
                 .collect(Collectors.toList());
 
         return OrderDto.builder()
                 .id(order.getId())
                 .orderDate(order.getOrderDate())
-                .orderStatus(order.getStatus())
-                .memberId(order.getMember().getId())
+                .orderStatusHistories(statusHistoryDtos)
+                .status(order.getStatus())
+                .createdDate(order.getCreatedDate())
+                .userId(order.getMember().getUserId())
                 .orderItems(orderItemDtos)
                 .build();
     }
@@ -177,7 +186,7 @@ public class DtoEntityConverter {
                 .rate(review.getRate())
                 .reviewText(review.getReviewText())
                 .itemId(review.getItem().getId())
-                .memberId(review.getMember().getId())
+                .userId(review.getMember().getUserId())
                 .build();
     }
 
