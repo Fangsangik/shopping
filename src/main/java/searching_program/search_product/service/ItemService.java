@@ -58,7 +58,7 @@ public class ItemService {
         if (itemName != null) {
             return itemRepository.findByItemNameContaining(itemName, pageable);
         } else if (minPrice != null && maxPrice != null) {
-            return itemRepository.findByPriceBetween(minPrice, maxPrice, pageable);
+            return itemRepository.findByItemPriceBetween(minPrice, maxPrice, pageable);
         } else if (category != null) {
             return itemRepository.findByCategory(category, pageable);
         }
@@ -85,14 +85,14 @@ public class ItemService {
             pageNumber = 0;
         }
         Pageable pageable = PageRequest.of(pageNumber, 5, Sort.by("price").ascending());
-        Page<Item> items = itemRepository.findByPriceBetween(minPrice, maxPrice, pageable);
+        Page<Item> items = itemRepository.findByItemPriceBetween(minPrice, maxPrice, pageable);
         return items.map(converter::convertToItemDto);
     }
 
     @Transactional
     public void checkAndNotification() {
         int stockThreshold = 10; //재고 임계값 설정
-        List<Item> alarm = itemRepository.findByStockLessThanEqualAndStatus(stockThreshold, AVAILABLE);
+        List<Item> alarm = itemRepository.findByStockLessThanEqualAndItemStatus(stockThreshold, AVAILABLE);
         for (Item item : alarm) {
             item.updateStatus(OUT_OF_STOCK);
             notificationService.sendLowStockAlert(item);
