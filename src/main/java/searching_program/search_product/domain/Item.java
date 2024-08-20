@@ -21,11 +21,12 @@ public class Item {
     private String itemName;
     private String link;
     private String image;
-    private int price;
+    private int itemPrice; // ItemDto의 price와 통일성을 위해 itemPrice 사용
     private int lowPrice;
     private int maxPrice;
     private int myPrice;
     private int stock;
+    private String category;
 
     @Enumerated(EnumType.STRING)
     private ItemStatus itemStatus;
@@ -34,7 +35,7 @@ public class Item {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToMany (mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemFavorite> itemFavorites = new ArrayList<>();
 
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
@@ -44,9 +45,10 @@ public class Item {
     private List<Promotion> promotions = new ArrayList<>();
 
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
-    private List<Order> orders = new ArrayList<>();
+    private List<Orders> orders = new ArrayList<>();
 
     public void updateStatus(ItemStatus itemStatus) {
         this.itemStatus = itemStatus;
     }
 }
+
