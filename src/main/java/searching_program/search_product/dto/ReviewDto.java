@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 public class ReviewDto {
     private Long id;
-    private Long memberId;
+    private String userId;
     private Long itemId;
     private String reviewText;
     private int rate;
