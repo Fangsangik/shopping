@@ -177,10 +177,11 @@ class MemberServiceTest {
     @Test
     @Transactional
     void lockMember() {
-        Long memberId = member.getId();
-        memberService.lockMember(memberId);
 
-        Member lockMember = memberRepository.findById(memberId)
+        Long userId = member.getId();
+        memberService.lockMember(userId);
+
+        Member lockMember = memberRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
         assertThat(lockMember.isLock()).isTrue();
