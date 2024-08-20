@@ -20,8 +20,9 @@ public class OrderStatusHistory {
 
     @ManyToOne
     @JoinColumn(name = "order_id")
-    private Order order;
+    private Orders order;
 
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
     private LocalDateTime timestamp;
 }
