@@ -43,7 +43,7 @@ public class FavoriteService {
 
     @Transactional
     public void removeFavorites(Long memberId, Long itemId) {
-        itemFavoriteRepository.deleteByUserIdAndItemId(memberId, itemId);
+        itemFavoriteRepository.deleteByMemberIdAndItemId(memberId, itemId);
     }
 
     @Transactional(readOnly = true)
