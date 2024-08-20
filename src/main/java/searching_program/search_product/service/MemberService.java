@@ -33,13 +33,7 @@ public class MemberService {
         // 비밀번호 해시화
         memberDto.setPassword(encodePassword(memberDto.getPassword()));
 
-        // DTO를 엔티티로 변환
-        Member member = converter.convertToMemberEntity(memberDto);
-
-        // 엔티티 저장
-        Member savedMember = memberRepository.save(member);
-
-        // 저장된 엔티티를 DTO로 변환하여 반환
+        Member savedMember = memberRepository.save(converter.convertToMemberEntity(memberDto));
         return converter.convertToMemberDto(savedMember);
     }
 
@@ -47,25 +41,17 @@ public class MemberService {
     public MemberDto createMember(MemberDto memberDto) {
         log.info("회원 생성 요청: userId={}", memberDto.getUserId());
 
+        validateMemberDto(memberDto);
+
         // userId 중복 확인
         if (memberRepository.existsByUserId(memberDto.getUserId())) {
             log.error("회원 생성 실패: userId {}는 이미 존재합니다.", memberDto.getUserId());
             throw new IllegalArgumentException("아이디 값이 이미 존재합니다.");
         }
 
-        validateMemberDto(memberDto);
 
-        if (memberDto.getPassword() == null) {
-            throw new IllegalArgumentException("비밀번호가 null 일수 없습니다.");
-        }
-
-        // 비밀번호 해시화
-        String encodedPassword = passwordEncoder.encode(memberDto.getPassword());
-        log.info("Encoded password: {}", encodedPassword);
-        memberDto.setPassword(encodedPassword);
-
-        Member newMember = converter.convertToMemberEntity(memberDto);
-        Member savedMember = memberRepository.save(newMember);
+        memberDto.setPassword(encodePassword(memberDto.getPassword()));
+        Member savedMember = memberRepository.save(converter.convertToMemberEntity(memberDto));
         log.info("회원 생성 성공: ID={}", savedMember.getId());
         return converter.convertToMemberDto(savedMember);
 
@@ -75,11 +61,7 @@ public class MemberService {
     public MemberDto updateMember(Long id, MemberDto memberDto) {
         log.info("회원 업데이트 요청: ID={}", id);
 
-        Member existingMember = memberRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("회원 업데이트 실패: ID {}에 해당하는 회원이 존재하지 않습니다.", id);
-                    return new IllegalArgumentException("회원이 존재하지 않습니다.");
-                });
+        Member existingMember = findMemberById(id);
 
         log.debug("기존 회원 정보: {}", existingMember);
 
@@ -88,43 +70,24 @@ public class MemberService {
             throw new IllegalArgumentException("아이디가 일치하지 않습니다.");
         }
 
-        // 비밀번호가 제공된 경우 해시화하여 저장
-        if (memberDto.getPassword() != null && !memberDto.getPassword().isEmpty()) {
-            String encodedPassword = encodePassword(memberDto.getPassword());
-            existingMember.setPassword(encodedPassword);
-            log.debug("비밀번호가 변경되었습니다: {}", encodedPassword);
+        if (isPasswordProvided(memberDto)) {
+            existingMember.setPassword(encodePassword(memberDto.getPassword()));
         }
 
-        if (memberDto.getUserId() == null) {
-            throw new IllegalArgumentException("UserId가 설정되어 있지 않습니다.");
-        }
-
+        validateUserId(memberDto);
         updateMemberFields(memberDto, existingMember);
 
-        Member updatedMember = memberRepository.save(existingMember);
-        log.info("회원 업데이트 성공: ID={}", updatedMember.getId());
-        return converter.convertToMemberDto(updatedMember);
+        // 기존 Member 객체를 업데이트된 DTO 객체로 변환
+        log.info("회원 업데이트 성공: ID={}", existingMember.getId());
+        return converter.convertToMemberDto(memberRepository.save(existingMember));
     }
 
-    private static void updateMemberFields(MemberDto memberDto, Member existingMember) {
-        //리펙토링 할때 Set값 변경하기.
-        existingMember.setUserId(memberDto.getUserId());
-        existingMember.setUsername(memberDto.getUsername());
-        existingMember.setAddress(memberDto.getAddress());
-        existingMember.setAge(memberDto.getAge());
-        existingMember.setGrade(memberDto.getGrade());
-        existingMember.setPaymentMethod(memberDto.getPaymentMethod());
-    }
 
     @Transactional
     public void deleteMember(Long id, String password) {
         log.info("회원 삭제 요청 처리 시작: ID={}", id);
 
-        Member existingMember = memberRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("회원 삭제 실패: ID {}에 해당하는 회원이 존재하지 않습니다.", id);
-                    return new IllegalArgumentException("회원이 존재하지 않습니다.");
-                });
+        Member existingMember = findMemberById(id);
 
         log.debug("입력된 비밀번호와 저장된 비밀번호 비교 중...");
         log.debug("저장된 비밀번호: {}", existingMember.getPassword());
@@ -142,8 +105,9 @@ public class MemberService {
     @Transactional(readOnly = true)
     public List<MemberDto> findAll() {
         log.info("모든 회원 조회 요청");
-        List<Member> members = memberRepository.findAll();
-        return members.stream().map(converter::convertToMemberDto).collect(Collectors.toList());
+        return memberRepository.findAll()
+                .stream().map(converter::convertToMemberDto)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -161,26 +125,24 @@ public class MemberService {
     @Transactional(readOnly = true)
     public List<MemberDto> findByName(String name) {
         log.info("이름으로 회원 조회 요청: 이름={}", name);
-        List<Member> members = memberRepository.findByUsernameContaining(name);
-        return members.stream().map(converter::convertToMemberDto).collect(Collectors.toList());
+        return memberRepository.findByUsernameContaining(name)
+                .stream().map(converter::convertToMemberDto)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<MemberDto> findByAgeGreaterThan(int age) {
         log.info("나이로 회원 조회 요청: 나이={}", age);
-        List<Member> members = memberRepository.findByAgeGreaterThan(age);
-        return members.stream().map(converter::convertToMemberDto).collect(Collectors.toList());
+        return memberRepository.findByAgeGreaterThan(age)
+                .stream()
+                .map(converter::convertToMemberDto)
+                .collect(Collectors.toList());
     }
 
     @Transactional
     public void deactivateMember(Long id) {
         log.info("회원 비활성화 요청: ID={}", id);
-        Member member = memberRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("회원 비활성화 실패: ID {}에 해당하는 회원이 존재하지 않습니다.", id);
-                    return new IllegalArgumentException("회원이 존재하지 않습니다.");
-                });
-
+        Member member = findMemberById(id);
         member.deactivate();
         memberRepository.save(member);
         log.info("회원 비활성화 성공: ID={}", id);
@@ -189,12 +151,7 @@ public class MemberService {
     @Transactional
     public void reactivateMember(Long id) {
         log.info("회원 활성화 요청: ID={}", id);
-        Member member = memberRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("회원 활성화 실패: ID {}에 해당하는 회원이 존재하지 않습니다.", id);
-                    return new IllegalArgumentException("회원이 존재하지 않습니다.");
-                });
-
+        Member member = findMemberById(id);
         member.reactivate();
         memberRepository.save(member);
         log.info("회원 활성화 성공: ID={}", id);
@@ -203,11 +160,7 @@ public class MemberService {
     @Transactional
     public void changePassword(Long id, String oldPassword, String newPassword) {
         log.info("비밀번호 변경 요청: ID={}", id);
-        Member member = memberRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("비밀번호 변경 실패: ID {}에 해당하는 회원이 존재하지 않습니다.", id);
-                    return new IllegalArgumentException("회원이 존재하지 않습니다.");
-                });
+        Member member =findMemberById(id);
 
         if (!passwordEncoder.matches(oldPassword, member.getPassword())) {
             log.error("비밀번호 변경 실패: 현재 비밀번호가 일치하지 않습니다.");
@@ -220,33 +173,23 @@ public class MemberService {
     }
 
     @Transactional
-    public void lockMember(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+    public void lockMember(Long id) {
+        Member member = findMemberById(id);
         member.setLock(true);
         memberRepository.save(member);
     }
 
     @Transactional(readOnly = true)
     public List<MemberDto> findAllMembers() {
-       return memberRepository.findAll()
-               .stream()
-               .map(member -> new MemberDto(
-                member.getId(),
-                member.getUserId(),
-                member.getUsername(),
-                member.getAge(),
-                member.getPassword(),
-                member.isLock(),
-                member.getAddress(),
-                member.getBirth(),
-                member.getCreatedAt(),
-                member.getDeletedAt(),
-                member.getPaymentMethod(),
-                member.getMemberStatus(),
-                member.getGrade()
-        ))
-               .collect(Collectors.toList());
+        return memberRepository.findAll()
+                .stream()
+                .map(converter::convertToMemberDto)
+                .collect(Collectors.toList());
+    }
+
+    private Member findMemberById(Long id) {
+        return memberRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
     }
 
     private void validateMemberDto(MemberDto memberDto) {
@@ -262,5 +205,27 @@ public class MemberService {
             log.error("유효성 검사 실패: userId 값은 Null일 수 없습니다.");
             throw new IllegalArgumentException("userId 값은 Null일 수 없습니다.");
         }
+    }
+
+    private static void validateUserId(MemberDto memberDto) {
+        if (memberDto.getUserId() == null) {
+            throw new IllegalArgumentException("UserId가 설정되어 있지 않습니다.");
+        }
+    }
+
+    private boolean isPasswordProvided(MemberDto memberDto) {
+        return memberDto.getPassword() != null && !memberDto.getPassword().isEmpty();
+    }
+
+    /**
+     * TODO -> set값 사용 안하기
+     */
+    private static void updateMemberFields(MemberDto memberDto, Member existingMember) {
+        existingMember.setUserId(memberDto.getUserId());
+        existingMember.setUsername(memberDto.getUsername());
+        existingMember.setAddress(memberDto.getAddress());
+        existingMember.setAge(memberDto.getAge());
+        existingMember.setGrade(memberDto.getGrade());
+        existingMember.setPaymentMethod(memberDto.getPaymentMethod());
     }
 }
