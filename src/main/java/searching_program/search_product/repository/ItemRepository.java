@@ -23,9 +23,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     Page<Item> findByCategory(String category, Pageable pageable);
     Page<Item> findByItemPrice(int price, Pageable pageable);
 
-    Page<Item> findByPriceBetween(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable);
+    Page<Item> findByItemPriceBetween(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable);
 
-    List<Item> findByStockLessThanEqualAndStatus(int stock, ItemStatus itemStatus);
-
-    List<Item> findLowStockItems();
+    List<Item> findByStockLessThanEqualAndItemStatus(int stock, ItemStatus itemStatus);
 }
