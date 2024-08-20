@@ -1,9 +1,6 @@
 package searching_program.search_product.dto;
 
 import lombok.*;
-import searching_program.search_product.domain.Order;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -17,3 +14,4 @@ public class OrderItemDto {
     private int quantity;
     private int price;
 }
+

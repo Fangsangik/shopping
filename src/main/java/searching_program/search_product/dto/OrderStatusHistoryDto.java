@@ -14,4 +14,3 @@ public class OrderStatusHistoryDto {
     private OrderStatus status;
     private LocalDateTime timestamp;
 }
-

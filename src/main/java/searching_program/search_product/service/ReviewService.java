@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import searching_program.search_product.domain.Item;
 import searching_program.search_product.domain.Member;
-import searching_program.search_product.domain.Order;
+import searching_program.search_product.domain.Orders;
 import searching_program.search_product.domain.Review;
 import searching_program.search_product.dto.DtoEntityConverter;
 import searching_program.search_product.dto.ReviewDto;
@@ -37,7 +37,7 @@ public class ReviewService {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new IllegalArgumentException("아이탬 정보를 찾을 수 없습니다."));
 
-        Order order = orderRepository.findById(orderId)
+        Orders order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문 내역을 찾을 수 없습니다."));
 
         // 주문에 해당 아이탬이 있는지 확인하는 로직

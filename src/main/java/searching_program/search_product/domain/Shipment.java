@@ -20,7 +20,7 @@ public class Shipment {
 
     @OneToOne
     @JoinColumn(name = "order_id")
-    private Order order;
+    private Orders order;
 
     private String curLocation;
     private ShipmentStatus shipmentStatus;

@@ -25,3 +25,4 @@ public class ItemFavorite {
     @JoinColumn(name = "item_id")
     private Item item;
 }
+

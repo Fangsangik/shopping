@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class MemberDto {
 
-    private Long id; // 식별자 필드 추가
+    private Long id;
 
     private String userId;
     private String username;
