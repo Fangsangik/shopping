@@ -26,7 +26,6 @@ public class Item {
     private int maxPrice;
     private int myPrice;
     private int stock;
-    private String category;
 
     @Enumerated(EnumType.STRING)
     private ItemStatus itemStatus;
@@ -46,6 +45,10 @@ public class Item {
 
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
     private List<Orders> orders = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     public void updateStatus(ItemStatus itemStatus) {
         this.itemStatus = itemStatus;
