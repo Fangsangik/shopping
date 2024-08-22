@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * DTO -> Entity, Entity -> Dto
+ * TODO -> MapStruct 사용 (자동 변환)
+ *
  */
 @Component
 public class DtoEntityConverter {
@@ -37,18 +38,20 @@ public class DtoEntityConverter {
                 .itemName(itemDto.getItemName())
                 .link(itemDto.getLink())
                 .stock(itemDto.getStock())
+                .category(convertToCategoryEntity(itemDto.getCategoryDto()))
                 .build();
     }
 
     public ItemFavorite convertToFavoriteEntity(ItemFavoriteDto itemFavoriteDto, Member member, Item item) {
         return ItemFavorite.builder()
+                .id(itemFavoriteDto.getId())
                 .item(item)
                 .member(member)
                 .id(itemFavoriteDto.getId())
                 .build();
     }
 
-    public Shipment convertToShipmentEntity(ShipmentDto shipmentDto, Orders order){
+    public Shipment convertToShipmentEntity(ShipmentDto shipmentDto, Orders order) {
         return Shipment.builder()
                 .curLocation(shipmentDto.getCurLocation())
                 .estimatedDeliveryDate(shipmentDto.getEstimatedDeliveryDate())
@@ -99,6 +102,21 @@ public class DtoEntityConverter {
                 .build();
     }
 
+    public Category convertToCategoryEntity(CategoryDto categoryDto) {
+        return Category.builder()
+                .id(categoryDto.getId())
+                .name(categoryDto.getName())
+                .build();
+    }
+
+    public CategoryDto convertToCategoryDto(Category category) {
+        return CategoryDto.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .build();
+    }
+
+
     public MemberDto convertToMemberDto(Member member) {
         return MemberDto.builder()
                 .id(member.getId())
@@ -123,6 +141,7 @@ public class DtoEntityConverter {
                 .lowPrice(item.getLowPrice())
                 .link(item.getLink())
                 .stock(item.getStock())
+                .categoryDto(convertToCategoryDto(item.getCategory()))
                 .build();
     }
 
