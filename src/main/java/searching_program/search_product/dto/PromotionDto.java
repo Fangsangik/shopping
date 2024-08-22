@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class PromotionDto {
     private Long id;
     private Long itemId;
-    private BigDecimal discountRate;
+    private Long discountRate;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
 }

@@ -15,4 +15,6 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
     List<Item> findItemsWithActivePromotions(@Param("now") LocalDateTime now);
 
     boolean existsByItemAndStartDateLessThanEqualAndEndDateGreaterThanEqual(Item item, LocalDateTime endDate, LocalDateTime startDate);
+
+    List<Promotion> findByItem(Item item);
 }

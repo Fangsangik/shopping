@@ -20,7 +20,7 @@ public class Promotion {
     @ManyToOne
     private Item item;
 
-    private BigDecimal discountRate;
+    private Long discountRate;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
 }
