@@ -26,10 +26,14 @@ public class PromotionService {
     private final DtoEntityConverter converter;
 
     @Transactional
-    public void applyPromotion(Long itemId, BigDecimal discountRate, LocalDateTime startDate, LocalDateTime endDate) {
+    public void applyPromotion(Long itemId, Long discountRate, LocalDateTime startDate, LocalDateTime endDate) {
 
-        if (discountRate.compareTo(BigDecimal.ZERO) < 0) {
+        if (discountRate.compareTo(0L) < 0) {
             throw new IllegalArgumentException("할인율은 0보다 작을 수 없습니다.");
+        }
+
+        if (discountRate.compareTo(100L) > 0) {
+            throw new IllegalArgumentException("할인율은 100% 이상일 수 없습니다.");
         }
 
         if (startDate.isAfter(endDate)) {
