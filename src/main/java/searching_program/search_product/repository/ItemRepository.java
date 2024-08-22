@@ -2,6 +2,7 @@ package searching_program.search_product.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
+import searching_program.search_product.domain.Category;
 import searching_program.search_product.domain.Item;
 import org.springframework.data.domain.Pageable;
 import searching_program.search_product.type.ItemStatus;
@@ -20,10 +21,12 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     Page<Item> findByItemNameContaining(String itemName, Pageable pageable);
 
-    Page<Item> findByCategory(String category, Pageable pageable);
+    Page<Item> findByCategory(Category category, Pageable pageable);
     Page<Item> findByItemPrice(int price, Pageable pageable);
 
-    Page<Item> findByItemPriceBetween(BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable);
+    Page<Item> findByItemPriceBetween(int minPrice, int maxPrice, Pageable pageable);
 
     List<Item> findByStockLessThanEqualAndItemStatus(int stock, ItemStatus itemStatus);
+
+    List<Item> findByItemNameContainingOrItemNameContaining(String itemName1, String itemName2);
 }
