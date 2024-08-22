@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import searching_program.search_product.domain.*;
 import searching_program.search_product.dto.*;
+import searching_program.search_product.repository.CategoryRepository;
 import searching_program.search_product.repository.ItemRepository;
 import searching_program.search_product.repository.MemberRepository;
 import searching_program.search_product.repository.OrderRepository;
@@ -43,6 +44,8 @@ class OrderServiceTest {
     private ItemRepository itemRepository;
 
     @Autowired
+    private CategoryRepository categoryRepository;
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -52,10 +55,12 @@ class OrderServiceTest {
     private MemberDto memberDto;
     private ItemDto itemDto;
     private OrderItemDto orderItemDto;
+    private CategoryDto categoryDto;
 
 
     @BeforeEach
     void setUp() {
+        // 회원 저장
         Member member = memberRepository.save(Member.builder()
                 .userId("testUser")
                 .username("터진입")
@@ -65,15 +70,22 @@ class OrderServiceTest {
 
         memberDto = converter.convertToMemberDto(member);
 
+        // 카테고리 저장
+        Category category = categoryRepository.save(Category.builder()
+                .name("Test Category")
+                .build());
 
+        // 아이템 저장
         Item item = itemRepository.save(Item.builder()
                 .itemName("Test Item")
                 .itemPrice(100)
                 .stock(1000)
+                .category(category) // 저장된 카테고리 설정
                 .build());
 
         itemDto = converter.convertToItemDto(item);
 
+        // 주문 DTO 생성
         orderDto = OrderDto.builder()
                 .userId(memberDto.getUserId())
                 .orderDate(LocalDateTime.now())
@@ -81,6 +93,7 @@ class OrderServiceTest {
                 .status(ORDERED)
                 .build();
 
+        // 주문 항목 DTO 생성
         orderItemDto = OrderItemDto.builder()
                 .itemId(itemDto.getId())
                 .price(200)
@@ -120,7 +133,7 @@ class OrderServiceTest {
 
     @Test
     @Transactional
-    void updateOrder(){
+    void updateOrder() {
         OrderDto createdOrder = orderService.createOrder(orderDto, memberDto);
         OrderItemDto orderItemDtosUpdate = createdOrder.getOrderItems().get(0);
 
