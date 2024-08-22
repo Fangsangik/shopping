@@ -1,6 +1,7 @@
 package searching_program.search_product.service.notification;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -8,10 +9,14 @@ import searching_program.search_product.domain.Item;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import javax.validation.Valid;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService{
+
+    //@Value("${EMAIL_PASSWORD}")
+    private String emailPassword;
 
     private final JavaMailSender mailSender;
 
