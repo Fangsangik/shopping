@@ -27,12 +27,15 @@ public class FavoriteService {
     private final DtoEntityConverter converter;
 
     @Transactional
-    public void addFavorites(Long memberId, Long itemId) {
-        Member member = memberRepository.findById(memberId)
+    public void addFavorites(String userId, Long itemId) {
+        Member member = memberRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+        if (member.getUserId() == null) {
+            throw new IllegalArgumentException("userId 값이 null이면 안됩니다.");
+        }
 
         Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new IllegalArgumentException("아이탬 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("아이템 정보를 찾을 수 없습니다."));
 
         ItemFavorite itemFavorite = ItemFavorite.builder()
                 .member(member)
@@ -42,15 +45,18 @@ public class FavoriteService {
     }
 
     @Transactional
-    public void removeFavorites(Long memberId, Long itemId) {
-        itemFavoriteRepository.deleteByMemberIdAndItemId(memberId, itemId);
+    public void removeFavorites(String userId, Long itemId) {
+        itemFavoriteRepository.deleteByMemberUserIdAndItemId(userId, itemId);
     }
 
     @Transactional(readOnly = true)
-    public List<ItemDto> findFavoriteItemsByMemberId(Long memberId) {
-        List<Item> favoriteItems = itemFavoriteRepository.findItemsByMemberId(memberId);
-        return favoriteItems.stream()
-                .map(converter::convertToItemDto)
+    public List<ItemDto> findFavoriteItemsByUserId(String userId) {
+        // userId를 기반으로 해당 사용자의 즐겨찾기 아이템을 조회
+        List<ItemFavorite> favorites = itemFavoriteRepository.findByMemberUserId(userId);
+
+        // Item 객체들을 ItemDto로 변환
+        return favorites.stream()
+                .map(favoriteItem -> converter.convertToItemDto(favoriteItem.getItem()))
                 .collect(Collectors.toList());
     }
 }
