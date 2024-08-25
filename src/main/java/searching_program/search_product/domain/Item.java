@@ -30,6 +30,10 @@ public class Item {
     @Enumerated(EnumType.STRING)
     private ItemStatus itemStatus;
 
+    //Item이 여러 bucket을 소유 할 수 있음
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Bucket> buckets = new ArrayList<>();
+
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;
