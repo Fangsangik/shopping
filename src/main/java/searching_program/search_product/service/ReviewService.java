@@ -10,13 +10,17 @@ import searching_program.search_product.domain.Orders;
 import searching_program.search_product.domain.Review;
 import searching_program.search_product.dto.DtoEntityConverter;
 import searching_program.search_product.dto.ReviewDto;
+import searching_program.search_product.error.CustomError;
 import searching_program.search_product.repository.ItemRepository;
 import searching_program.search_product.repository.MemberRepository;
 import searching_program.search_product.repository.OrderRepository;
 import searching_program.search_product.repository.ReviewRepository;
+import searching_program.search_product.type.ErrorCode;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static searching_program.search_product.type.ErrorCode.*;
 
 @Slf4j
 @Service
@@ -32,20 +36,20 @@ public class ReviewService {
     @Transactional
     public void addReview (Long orderId, Long memberId, Long itemId, String reviewText, int rate) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomError(USER_NOT_FOUND));
 
         Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new IllegalArgumentException("아이탬 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomError(ITEM_NOT_FOUND));
 
         Orders order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("주문 내역을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomError(ORDER_NOT_FOUND));
 
         // 주문에 해당 아이탬이 있는지 확인하는 로직
         boolean itemInOrder = order.getOrderItems().stream()
                 .anyMatch(orderItem -> orderItem.getItem().getId().equals(itemId));
 
         if (!itemInOrder) {
-            throw new IllegalArgumentException("이 아이템은 이 주문에 포함되어 있지 않습니다.");
+            throw new CustomError(ORDER_LIST_NOT_FOUND);
         }
 
         Review review = Review.builder()
@@ -60,7 +64,7 @@ public class ReviewService {
     @Transactional
     public void removeReview(Long memberId, Long itemId) {
         Review review = reviewRepository.findByMemberIdAndItemId(memberId, itemId)
-                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomError(REVIEW_NOT_FOUND));
 
         reviewRepository.delete(review);
     }
@@ -68,7 +72,8 @@ public class ReviewService {
     @Transactional
     public void editReview(Long memberId, Long itemId, String newReviewText, int newRate){
         Review review = reviewRepository.findByMemberIdAndItemId(memberId, itemId)
-                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomError(REVIEW_NOT_FOUND));
+
 
         review.setReviewText(newReviewText);
         review.setRate(newRate);
@@ -87,7 +92,7 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public ReviewDto getReview(Long memberId, Long itemId) {
         Review review = reviewRepository.findByMemberIdAndItemId(memberId, itemId)
-                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomError(REVIEW_NOT_FOUND));
         return converter.convertToReviewDto(review);
     }
 }

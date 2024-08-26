@@ -8,7 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import searching_program.search_product.domain.Member;
 import searching_program.search_product.dto.DtoEntityConverter;
 import searching_program.search_product.dto.MemberDto;
+import searching_program.search_product.error.CustomError;
 import searching_program.search_product.repository.MemberRepository;
+import searching_program.search_product.type.ErrorCode;
 
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +48,7 @@ public class MemberService {
         // userId 중복 확인
         if (memberRepository.existsByUserId(memberDto.getUserId())) {
             log.error("회원 생성 실패: userId {}는 이미 존재합니다.", memberDto.getUserId());
-            throw new IllegalArgumentException("아이디 값이 이미 존재합니다.");
+            throw new CustomError(ErrorCode.USER_DUPLICATE);
         }
 
 
@@ -67,7 +69,7 @@ public class MemberService {
 
         if (!id.equals(memberDto.getId())) {
             log.error("회원 업데이트 실패: 요청된 ID와 DTO의 ID가 일치하지 않습니다.");
-            throw new IllegalArgumentException("아이디가 일치하지 않습니다.");
+            throw new CustomError(ErrorCode.INVALID_INPUT_VALUE);
         }
 
         if (isPasswordProvided(memberDto)) {
@@ -94,7 +96,7 @@ public class MemberService {
 
         if (!passwordEncoder.matches(password, existingMember.getPassword())) {
             log.error("회원 삭제 실패: 비밀번호가 일치하지 않습니다.");
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new CustomError(ErrorCode.PASSWORD_NOT_MATCH);
         }
 
         log.debug("비밀번호 일치 확인 완료, 회원 삭제 진행 중...");
@@ -189,27 +191,27 @@ public class MemberService {
 
     private Member findMemberById(Long id) {
         return memberRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomError(ErrorCode.USER_NOT_FOUND));
     }
 
     private void validateMemberDto(MemberDto memberDto) {
         if (memberDto.getUsername() == null || memberDto.getUsername().isEmpty()) {
             log.error("유효성 검사 실패: 이름은 필수 입력 사항입니다.");
-            throw new IllegalArgumentException("이름은 필수 입력 사항입니다.");
+            throw new CustomError(ErrorCode.INVALID_INPUT_VALUE);
         }
         if (memberDto.getAge() < 0) {
             log.error("유효성 검사 실패: 나이는 음수가 될 수 없습니다.");
-            throw new IllegalArgumentException("나이는 음수가 될 수 없습니다.");
+            throw new CustomError(ErrorCode.AGE_MUST_GREATER_THAN_ZERO);
         }
         if (memberDto.getUserId() == null || memberDto.getUserId().isEmpty()) {
             log.error("유효성 검사 실패: userId 값은 Null일 수 없습니다.");
-            throw new IllegalArgumentException("userId 값은 Null일 수 없습니다.");
+            throw new CustomError(ErrorCode.INVALID_INPUT_VALUE);
         }
     }
 
     private static void validateUserId(MemberDto memberDto) {
         if (memberDto.getUserId() == null) {
-            throw new IllegalArgumentException("UserId가 설정되어 있지 않습니다.");
+            throw new CustomError(ErrorCode.INVALID_INPUT_VALUE);
         }
     }
 
