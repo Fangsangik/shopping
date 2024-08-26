@@ -180,6 +180,27 @@ public class DtoEntityConverter {
                 .build();
     }
 
+    public BucketDto convertToBucketDto(Bucket bucket) {
+        return BucketDto.builder()
+                .id(bucket.getId())
+                .memberId(bucket.getMember().getId())
+                .itemName(bucket.getItem().getItemName())
+                .itemTotalPrice(bucket.calculateItemTotalPrice())
+                .addedAt(bucket.getAddedAt())
+                .quantity(bucket.getQuantity())
+                .build();
+    }
+
+    public PaymentDto convertToPaymentDto(Payment payment) {
+        return PaymentDto.builder()
+                .id(payment.getId())
+                .orderId(payment.getOrder().getId())
+                .amount(payment.getAmount())
+                .status(payment.getPaymentStatus())
+                .paymentDate(payment.getPaymentDate())
+                .build();
+    }
+
     public OrderItemDto convertToOrderItemDto(OrderItem orderItem) {
         return OrderItemDto.builder()
                 .id(orderItem.getId())
