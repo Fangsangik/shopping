@@ -5,14 +5,21 @@ import lombok.*;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+import static javax.persistence.GenerationType.IDENTITY;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Entity
 public class Bucket {
 
-    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Id @GeneratedValue(strategy = IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "bucket_id")
     private Item item;
 
     //Member를 단방형 연관관계로 설정함으로써 복잡성 감소
@@ -21,7 +28,7 @@ public class Bucket {
     private Member member;
 
     private int quantity;
-    private LocalDateTime localDateTime;
+    private LocalDateTime addedAt;
     private boolean isSelected;
     private int itemTotalPrice;
 
