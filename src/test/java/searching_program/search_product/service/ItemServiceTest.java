@@ -66,31 +66,32 @@ class ItemServiceIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        categoryDto = CategoryDto.builder()
+        Category category = categoryRepository.save(Category.builder()
                 .name("electronic")
-                .build();
-        Category savedCategory = categoryRepository.save(converter.convertToCategoryEntity(categoryDto));
+                .build());
+        categoryDto = converter.convertToCategoryDto(category);
 
-        ItemDto itemDto1 = ItemDto.builder()
+        Item item1 = itemRepository.save(Item.builder()
                 .itemName("macbook")
                 .itemPrice(15000)  // int 사용
                 .lowPrice(1000)    // int 사용
                 .maxPrice(19000)   // int 사용
                 .stock(20)
-                .categoryDto(converter.convertToCategoryDto(savedCategory))
-                .build();
+                .category(category)
+                .build());
 
-        ItemDto itemDto2 = ItemDto.builder()
+        itemDto1 = converter.convertToItemDto(item1);
+
+        Item item2 = itemRepository.save(Item.builder()
                 .itemName("airpods")
                 .itemPrice(11000)  // int 사용
                 .lowPrice(2000)    // int 사용
                 .maxPrice(18000)   // int 사용
                 .stock(20)
-                .categoryDto(converter.convertToCategoryDto(savedCategory))
-                .build();
+                .category(category)
+                .build());
 
-        Item savedItem1 = itemRepository.save(converter.convertToItemEntity(itemDto1));
-        Item savedItem2 = itemRepository.save(converter.convertToItemEntity(itemDto2));
+        itemDto2 = converter.convertToItemDto(item2);
     }
 
     @Transactional
