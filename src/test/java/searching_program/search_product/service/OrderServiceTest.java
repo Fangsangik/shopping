@@ -28,7 +28,6 @@ import static searching_program.search_product.type.OrderStatus.*;
 
 @Slf4j
 @SpringBootTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 class OrderServiceTest {
 
     @Autowired
@@ -91,6 +90,7 @@ class OrderServiceTest {
                 .orderDate(LocalDateTime.now())
                 .orderItems(new ArrayList<>())
                 .status(ORDERED)
+                .orderStatusHistories(new ArrayList<>())
                 .build();
 
         // 주문 항목 DTO 생성
@@ -116,7 +116,6 @@ class OrderServiceTest {
     @Test
     @Transactional
     void findOrdersByMember() {
-        orderService.createOrder(orderDto, memberDto);
         Page<OrderDto> orderDtos = orderService.findOrdersByMember(memberDto.getUserId(), 0, 10);
         assertEquals(1, orderDtos.getTotalElements());
         assertEquals(memberDto.getUserId(), orderDtos.getContent().get(0).getUserId());

@@ -64,8 +64,13 @@ public class OrderService {
         }
 
         orders.changeStatus(OrderStatus.ORDERED);
+        OrderStatusHistory orderStatusHistory = OrderStatusHistory.builder()
+                .order(orders)
+                .status(OrderStatus.ORDERED)
+                .timestamp(LocalDateTime.now())
+                .build();
+        orders.addStatusHistory(orderStatusHistory.getStatus());
 
-        // 주문 저장
         Orders savedOrder = orderRepository.save(orders);
         log.info("주문 생성 성공: Order ID = {}, Member ID = {}", savedOrder.getId(), memberDto.getId());
 
