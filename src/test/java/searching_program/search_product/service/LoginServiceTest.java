@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import searching_program.search_product.domain.Member;
 import searching_program.search_product.dto.DtoEntityConverter;
@@ -21,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 임베디드 데이터베이스로 교체하지 않도록 설정
 class LoginServiceTest {
 
     @Autowired
@@ -72,10 +73,21 @@ class LoginServiceTest {
     @Test
     @Transactional
     void registerMember() {
-        boolean isRegistered = loginService.registerMember(member);
+        // Given
+        MemberDto memberDto = new MemberDto();
+        memberDto.setUserId("newUser");
+        memberDto.setPassword("testPassword");
+        memberDto.setUsername("Test User");
+
+        // When
+        boolean isRegistered = loginService.registerMember(memberDto);
+
+        // Then
         assertThat(isRegistered).isTrue();
-        assertThat(member.getUserId()).isNotNull();
-        assertThat(passwordEncoder.matches("test", memberRepository.findByUserId(member.getUserId()).get().getPassword()));
+
+        Member savedMember = memberRepository.findByUserId(memberDto.getUserId()).orElse(null);
+        assertThat(savedMember).isNotNull();
+        assertThat(passwordEncoder.matches("testPassword", savedMember.getPassword())).isTrue();
     }
 
     @Test
@@ -95,7 +107,7 @@ class LoginServiceTest {
                 .password("testPassword")
                 .build();
 
-        Optional<MemberDto> rst = loginService.loginCheck(loginAttempt);
+        Optional<MemberDto> rst = loginService.loginCheck(loginAttempt.getUserId(), loginAttempt.getPassword());
 
         System.out.println("rst = " + rst);
 
@@ -110,7 +122,7 @@ class LoginServiceTest {
                 .password("123")
                 .build();
 
-        Optional<MemberDto> rst = loginService.loginCheck(memberDto);
+        Optional<MemberDto> rst = loginService.loginCheck(memberDto.getUserId(), memberDto.getPassword());
         assertThat(rst).isNotPresent();
     }
 
