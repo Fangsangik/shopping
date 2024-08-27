@@ -76,20 +76,34 @@ public class PaymentService {
      * 결제 취소 메서드
      */
     @Transactional
-    public PaymentDto cancelPayment(Long paymentId) {
+    public PaymentDto cancelPayment(Long memberId, Long paymentId) {
+        // 결제 ID로 결제를 조회
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new CustomError(PAYMENT_NOT_FOUND));
 
-        if (payment.getPaymentStatus() == PaymentStatus.COMPLETED) {
-            throw new CustomError(PAYMENT_CANCELED);
+        // 결제가 해당 회원의 결제인지 확인
+        if (!payment.getMember().getId().equals(memberId)) {
+            log.error("결제 취소 실패: 회원 ID {}는 결제 ID {}의 소유자가 아닙니다.", memberId, paymentId);
+            throw new CustomError(USER_NOT_FOUND);
         }
 
+        // 결제 상태가 완료된 경우 결제 취소 불가
+        if (payment.getPaymentStatus() == PaymentStatus.COMPLETED) {
+            log.error("결제 취소 실패: 이미 완료된 결제 ID {}", paymentId);
+            throw new CustomError(PAYMENT_CANNOT_BE_CANCELED);
+        }
+
+        // 결제 상태가 PENDING 또는 AUTHORIZED가 아닌 경우 결제 취소 불가
         if (payment.getPaymentStatus() != PaymentStatus.PENDING && payment.getPaymentStatus() != PaymentStatus.AUTHORIZED) {
             throw new CustomError(PAYMENT_CANCELED);
+            log.error("결제 취소 실패: 취소할 수 없는 상태인 결제 ID {}", paymentId);
+            throw new CustomError(PAYMENT_CANNOT_BE_CANCELED);
         }
 
+        // 결제 상태를 CANCELED로 설정
         payment.setPaymentStatus(PaymentStatus.CANCELED);
         paymentRepository.save(payment);
+
         log.info("결제 취소 완료: Payment ID: {}", payment.getId());
         return converter.convertToPaymentDto(payment);
     }
@@ -98,7 +112,8 @@ public class PaymentService {
      * 결제 환불 메서드
      */
     @Transactional
-    public PaymentDto refundPayment(Long paymentId) {
+    public PaymentDto refundPayment(Long memberId, Long paymentId) {
+        // 결제 ID로 결제를 조회
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new CustomError(PAYMENT_NOT_FOUND));
 
