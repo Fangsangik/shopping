@@ -184,6 +184,6 @@ class MemberServiceTest {
         Member lockMember = memberRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
-        assertThat(lockMember.isLock()).isTrue();
+        assertThat(lockMember.isAccountLock()).isTrue();
     }
 }
