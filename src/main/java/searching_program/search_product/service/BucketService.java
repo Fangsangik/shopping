@@ -54,14 +54,21 @@ public class BucketService {
             throw new CustomError(INVALID_INPUT_VALUE);
         }
 
-        Bucket bucket = bucketRepository.findByItem_ItemName(itemName);
+        List<Bucket> buckets = bucketRepository.findByItem_ItemName(itemName);
 
-        if (bucket != null) {
-            return converter.convertToBucketDto(bucket);
-        } else {
+        if (buckets == null || buckets.isEmpty()) {
             throw new CustomError(ITEM_NOT_FOUND);
         }
+
+        if (buckets.size() > 1) {
+            throw new CustomError(NON_UNIQUE_RESULT);
+        }
+
+        // 여러 개의 Bucket 중 첫 번째 Bucket을 반환
+        Bucket bucket = buckets.get(0);
+        return converter.convertToBucketDto(bucket);
     }
+
 
     @Transactional
     public BucketDto addItemToBucket(Long memberId, Long itemId, int quantity) {
