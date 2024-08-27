@@ -76,6 +76,7 @@ public class PromotionService {
     public List<ItemDto> getItemsWithActivePromotions() {
         LocalDateTime now = LocalDateTime.now();
         List<Item> itemsWithPromotions = promotionRepository.findItemsWithActivePromotions(now);
+        log.info("현재 활성 프로모션이 적용된 아이템 수: {}", itemsWithPromotions.size());
         return itemsWithPromotions.stream()
                 .map(converter::convertToItemDto)
                 .collect(Collectors.toList());
