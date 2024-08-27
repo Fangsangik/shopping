@@ -13,6 +13,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 @NoArgsConstructor
 @Builder
 @Entity
+@Table(name = "tblBucket")
 public class Bucket {
 
     @Id @GeneratedValue(strategy = IDENTITY)

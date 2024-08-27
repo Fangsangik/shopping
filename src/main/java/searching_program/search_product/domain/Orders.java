@@ -15,11 +15,14 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "tblOrders")
 public class Orders {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private double totalAmount;
 
     @ManyToOne
     @JoinColumn(name = "member_id")
@@ -59,7 +62,7 @@ public class Orders {
         }
     }
 
-    private void addStatusHistory(OrderStatus newStatus) {
+    public void addStatusHistory(OrderStatus newStatus) {
         OrderStatusHistory history = OrderStatusHistory.builder()
                 .order(this)
                 .status(newStatus)

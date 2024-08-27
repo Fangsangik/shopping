@@ -12,6 +12,9 @@ import javax.persistence.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "tblItemFavorite", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"member_id", "item_id"})
+}) //중복방지
 public class ItemFavorite {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

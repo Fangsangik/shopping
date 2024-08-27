@@ -12,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "tblCategory")
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

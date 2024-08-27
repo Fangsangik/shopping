@@ -17,6 +17,7 @@ import java.util.List;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "tblMember")
 public class Member {
 
     @Id
@@ -52,7 +53,8 @@ public class Member {
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;
 
-    private boolean lock;
+    @Column(name = "is_locked")
+    private boolean accountLock;
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
