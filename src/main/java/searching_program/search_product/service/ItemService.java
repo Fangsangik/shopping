@@ -16,10 +16,12 @@ import searching_program.search_product.domain.ItemFavorite;
 import searching_program.search_product.domain.Member;
 import searching_program.search_product.dto.DtoEntityConverter;
 import searching_program.search_product.dto.ItemDto;
+import searching_program.search_product.error.CustomError;
 import searching_program.search_product.repository.CategoryRepository;
 import searching_program.search_product.repository.ItemRepository;
 import searching_program.search_product.repository.MemberRepository;
 import searching_program.search_product.service.notification.NotificationService;
+import searching_program.search_product.type.ErrorCode;
 import searching_program.search_product.type.ItemStatus;
 
 import java.math.BigDecimal;
@@ -60,7 +62,15 @@ public class ItemService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public ItemDto findById(Long itemId) {
+        Item findItem = itemRepository.findById(itemId)
+                .orElseThrow(() -> new CustomError(ErrorCode.ITEM_NOT_FOUND));
+        return converter.convertToItemDto(findItem);
+    }
+
     /**
+     * TODO :
      * Specification -> JPA에서 동적 쿼리를 작성할 수 있도록 지원하는 인터페이스
      * 동적쿼리 배운 다음 동적 쿼리로 refactoring 해보
      */
@@ -70,11 +80,15 @@ public class ItemService {
 
         if (itemName != null) {
             return itemRepository.findByItemNameContaining(itemName, pageable);
-        } else if (minPrice >= 0 && maxPrice >= 0) {
+        }
+
+        if (minPrice >= 0 && maxPrice >= 0) {
             return itemRepository.findByItemPriceBetween(minPrice, maxPrice, pageable);
-        } else if (categoryName != null) {
+        }
+
+        if (categoryName != null && !categoryName.isEmpty()) {
             Category category = categoryRepository.findByName(categoryName)
-                    .orElseThrow(() -> new IllegalArgumentException("Category not found: " + categoryName));
+                    .orElseThrow(() -> new CustomError(ErrorCode.CATEGORY_NOT_FOUND));
             return itemRepository.findByCategory(category, pageable);
         }
 
@@ -82,35 +96,49 @@ public class ItemService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ItemDto> findByItemPrice(int price, int pageNumber) {
-        if (pageNumber < 0) {
-            log.warn("음수 페이지 번호가 입력되었습니다. 첫 번째 페이지를 반환합니다.");
-            pageNumber = 0;
+    public Page<ItemDto> findByItemPrice(Integer price, int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("itemPrice").ascending());
+
+        Page<Item> itemPage;
+        if (price != null) {
+            itemPage = itemRepository.findByItemPrice(price, pageable);
+        } else {
+            itemPage = itemRepository.findAll(pageable); // price 파라미터가 없는 경우 모든 아이템 검색
         }
 
-        Pageable pageable = PageRequest.of(pageNumber, 5, Sort.by("itemPrice").ascending());
-        Page<Item> itemPrice = itemRepository.findByItemPrice(price, pageable);
-        return itemPrice.map(converter::convertToItemDto);
+        return itemPage.map(converter::convertToItemDto);
     }
 
     @Transactional(readOnly = true)
-    public Page<ItemDto> findByItemPriceRange(int minPrice, int maxPrice, int pageNumber) {
+    public Page<ItemDto> findByItemPriceRange(int minPrice, int maxPrice, int pageNumber, int pageSize) {
         if (pageNumber < 0) {
             log.warn("음수 페이지 번호가 입력되었습니다. 첫 번째 페이지를 반환합니다.");
             pageNumber = 0;
         }
-        Pageable pageable = PageRequest.of(pageNumber, 5, Sort.by("itemPrice").ascending());
+
+        if (pageSize <= 0) {
+            log.warn("페이지 크기가 0 이하로 설정되었습니다. 기본값 5를 사용합니다.");
+            pageSize = 5; // 기본값 설정
+        }
+
+        // 가격 범위 유효성 검사
+        if (minPrice > maxPrice) {
+            log.warn("최소 가격이 최대 가격보다 큽니다. minPrice: {}, maxPrice: {}", minPrice, maxPrice);
+            return Page.empty();
+        }
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("itemPrice").ascending());
         Page<Item> items = itemRepository.findByItemPriceBetween(minPrice, maxPrice, pageable);
         return items.map(converter::convertToItemDto);
     }
 
     @Transactional
-    public void checkAndNotification() {
-        int stockThreshold = 10; //재고 임계값 설정
-        List<Item> alarm = itemRepository.findByStockLessThanEqualAndItemStatus(stockThreshold, AVAILABLE);
+    public void checkAndNotification(int stockThreshold) {
+        List<Item> alarm = itemRepository.findByStockLessThanEqualAndItemStatus(stockThreshold, ItemStatus.AVAILABLE);
+
         for (Item item : alarm) {
-            item.updateStatus(OUT_OF_STOCK);
-            notificationService.sendLowStockAlert(item);
+            item.updateStatus(ItemStatus.OUT_OF_STOCK);  // 재고 상태 업데이트
+            notificationService.sendLowStockAlert(item); // 알림 발송
         }
     }
 }
