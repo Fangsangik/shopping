@@ -34,7 +34,7 @@ public class OrderService {
     private final ItemRepository itemRepository;
     private final OrderItemRepository orderItemRepository;
     private final DtoEntityConverter converter;
-    private final ShipmentRepository shipmentRepository;
+    private final PaymentService paymentService;
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
 
     /**
@@ -44,10 +44,10 @@ public class OrderService {
     public OrderDto createOrder(OrderDto orderDto, MemberDto memberDto) {
         log.info("주문 생성 요청: MemberId = {}, OrderDate = {}", memberDto.getId(), orderDto.getOrderDate());
 
-        // 주문 엔티티 생성
-        Orders orders = converter.convertToOrderEntity(orderDto, converter.convertToMemberEntity(memberDto));
+        Member member = converter.convertToMemberEntity(memberDto);
+        Orders orders = converter.convertToOrderEntity(orderDto);
+        orders.setMember(member);
 
-        // 주문 아이템 처리
         for (OrderItemDto orderItemDto : orderDto.getOrderItems()) {
             Item item = itemRepository.findById(orderItemDto.getItemId())
                     .orElseThrow(() -> new CustomError(ITEM_NOT_FOUND));
@@ -56,21 +56,22 @@ public class OrderService {
                 throw new CustomError(OUT_OF_STOCK);
             }
 
-            // 아이템 재고 감소
             item.setStock(item.getStock() - orderItemDto.getQuantity());
             itemRepository.save(item);
 
-            // 주문 아이템 엔티티 생성 및 주문에 추가
             OrderItem orderItem = converter.convertToOrderItemEntity(orderItemDto, orders, item);
             orders.addOrderItem(orderItem);
         }
 
-        // 주문 상태 설정 및 이력 추가
         orders.changeStatus(OrderStatus.ORDERED);
 
         // 주문 저장
         Orders savedOrder = orderRepository.save(orders);
         log.info("주문 생성 성공: Order ID = {}, Member ID = {}", savedOrder.getId(), memberDto.getId());
+
+        // 결제 서비스 호출
+        paymentService.processPayment(member.getId(), savedOrder.getId(), orderDto.getTotalAmount());
+
         return converter.convertToOrderDto(savedOrder);
     }
 
