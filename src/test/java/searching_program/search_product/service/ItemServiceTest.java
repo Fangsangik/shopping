@@ -102,8 +102,8 @@ class ItemServiceTest {
 
         assertEquals(1, byItemName1.size());
         assertEquals(1, byItemName2.size());
-        assertEquals("mac", byItemName1.get(0).getItemName());
-        assertEquals("air", byItemName2.get(0).getItemName());
+        assertEquals("macbook", byItemName1.get(0).getItemName());
+        assertEquals("airpods", byItemName2.get(0).getItemName());
     }
 
     @Transactional
@@ -142,7 +142,7 @@ class ItemServiceTest {
         int pageNum = 0;
         int pageSize = 10;
 
-        Page<ItemDto> rstPrice = itemService.findByItemPrice(itemPrice, 0);
+        Page<ItemDto> rstPrice = itemService.findByItemPrice(itemPrice, 0, 5);
 
         assertEquals(1, rstPrice.getTotalElements());
         assertEquals(15000, itemPrice);
