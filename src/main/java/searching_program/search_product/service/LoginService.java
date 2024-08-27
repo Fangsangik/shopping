@@ -83,6 +83,15 @@ public class LoginService {
         }
     }
 
+    @Transactional
+    private void incrementLoginAttempts(Long memberId) {
+        int attempts = loginAttempts.getOrDefault(memberId, 0);
+        loginAttempts.put(memberId, attempts + 1);
+    }
+
+    public int getLoginAttempts(Long memberId) {
+        return loginAttempts.getOrDefault(memberId, 0);
+    }
 
     public void createSession(HttpServletRequest request, MemberDto memberDto) {
         HttpSession session = request.getSession();
