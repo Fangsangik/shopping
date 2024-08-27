@@ -31,25 +31,15 @@ public class PromotionService {
 
     @Transactional
     public void applyPromotion(Long itemId, Long discountRate, LocalDateTime startDate, LocalDateTime endDate) {
-
-        if (discountRate.compareTo(0L) < 0) {
-            throw new CustomError(PROMOTION_MUST_OVER_THAN_ZERO);
-        }
-
-        if (discountRate.compareTo(100L) > 0) {
-            throw new CustomError(PROMOTION_MUST_NOT_OVER_THAN_HUNDRED);
-        }
-
-        if (startDate.isAfter(endDate)) {
-            throw new CustomError(START_DATE_MUST_BELOW_END_DATE);
-        }
+        validatePromotionParameters(discountRate, startDate, endDate); // 프로모션 매개변수 유효성 검증
 
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new CustomError(ITEM_NOT_FOUND));
 
-        //프로모션 중복 방지
+        // 프로모션 중복 방지
         boolean promotionExists = promotionRepository.existsByItemAndStartDateLessThanEqualAndEndDateGreaterThanEqual(item, endDate, startDate);
         if (promotionExists) {
+            log.warn("아이템 ID {}에 대해 중복된 프로모션이 존재합니다.", itemId);
             throw new CustomError(PROMOTION_ALREADY_EXIST);
         }
 
@@ -61,6 +51,24 @@ public class PromotionService {
                 .build();
 
         promotionRepository.save(promotion);
+        log.info("아이템 ID {}에 대해 새로운 프로모션이 적용되었습니다: 할인율 {}%, 시작일 {}, 종료일 {}", itemId, discountRate, startDate, endDate);
+    }
+
+    private void validatePromotionParameters(Long discountRate, LocalDateTime startDate, LocalDateTime endDate) {
+        if (discountRate == null || discountRate.compareTo(0L) < 0) {
+            log.error("할인율이 0 이상이어야 합니다. 현재 값: {}", discountRate);
+            throw new CustomError(PROMOTION_MUST_OVER_THAN_ZERO);
+        }
+
+        if (discountRate.compareTo(100L) > 0) {
+            log.error("할인율이 100을 초과할 수 없습니다. 현재 값: {}", discountRate);
+            throw new CustomError(PROMOTION_MUST_NOT_OVER_THAN_HUNDRED);
+        }
+
+        if (startDate == null || endDate == null || startDate.isAfter(endDate)) {
+            log.error("프로모션 시작 날짜가 종료 날짜보다 이전이어야 합니다. 시작일: {}, 종료일: {}", startDate, endDate);
+            throw new CustomError(START_DATE_MUST_BELOW_END_DATE);
+        }
     }
 
 
