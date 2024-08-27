@@ -198,6 +198,12 @@ public class OrderService {
         return orders.map(converter::convertToOrderDto);
     }
 
+    @Transactional(readOnly = true)
+    public Orders findOrderEntityById(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new CustomError(ORDER_NOT_FOUND));
+    }
+
     /**
      * 주문 상태 이력 저장 메서드
      */
