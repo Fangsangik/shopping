@@ -8,7 +8,7 @@ import searching_program.search_product.domain.Member;
 import java.util.List;
 
 public interface BucketRepository extends JpaRepository<Bucket, Long> {
-    Bucket findByItem_ItemName(String itemName);
+    List<Bucket> findByItem_ItemName(String itemName);
 
     List<Bucket> findByMemberId(Long memberId);
 
