@@ -42,7 +42,7 @@ import java.util.List;
 
 @SpringBootTest
 @EnableCaching
-class ItemServiceIntegrationTest {
+class ItemServiceTest {
 
     @Autowired
     private ItemService itemService;
