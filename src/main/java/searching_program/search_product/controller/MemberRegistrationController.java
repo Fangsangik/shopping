@@ -16,7 +16,7 @@ import javax.validation.Valid;
 @Slf4j
 @Controller
 @RequiredArgsConstructor
-public class RegistrationController {
+public class MemberRegistrationController {
 
     private final MemberService memberService;
 
