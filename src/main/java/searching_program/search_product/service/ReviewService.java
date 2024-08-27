@@ -59,6 +59,7 @@ public class ReviewService {
                 .rate(rate)
                 .build();
         reviewRepository.save(review);
+        log.info("리뷰가 성공적으로 추가되었습니다: 주문 ID = {}, 회원 ID = {}, 아이템 ID = {}", orderId, memberId, itemId);
     }
 
     @Transactional
