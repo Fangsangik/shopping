@@ -80,4 +80,38 @@ public class PromotionService {
                 .map(converter::convertToItemDto)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * 할인된 가격을 계산하는 메서드
+     *
+     * @param itemId       아이템 ID
+     * @param discountRate 할인율
+     * @return 할인된 가격
+     */
+    public double calculateDiscountedPrice(Long itemId, Long discountRate) {
+        // itemId로 Item을 조회
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new CustomError(ITEM_NOT_FOUND));  // 아이템이 없으면 예외 발생
+
+        // 할인율이 null이거나 0 이하인 경우 원래 가격을 반환
+        if (discountRate == null || discountRate <= 0) {
+            log.info("할인율이 0 이하이므로 원래 가격을 반환합니다: 아이템 ID = {}, 원래 가격 = {}", item.getId(), item.getItemPrice());
+            return item.getItemPrice();
+        }
+
+        // 할인율이 100을 초과하는 경우 예외 처리
+        if (discountRate > 100) {
+            log.error("할인율이 100을 초과할 수 없습니다. 현재 할인율: {}", discountRate);
+            throw new CustomError(PROMOTION_MUST_NOT_OVER_THAN_HUNDRED);
+        }
+
+        // 할인율을 적용하여 할인된 가격 계산
+        double discountMultiplier = (100.0 - discountRate) / 100.0;
+        double discountedPrice = item.getItemPrice() * discountMultiplier;
+
+        log.info("아이템 ID {}의 할인된 가격 계산: 원래 가격 = {}, 할인율 = {}%, 할인된 가격 = {}",
+                item.getId(), item.getItemPrice(), discountRate, discountedPrice);
+
+        return discountedPrice;
+    }
 }
