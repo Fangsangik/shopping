@@ -60,23 +60,22 @@ public class LoginService {
     @Transactional
     public Optional<MemberDto> loginCheck(String userId, String password) {
         try {
-            // userId를 통해 회원 정보 조회
-            MemberDto findMember = memberService.findByUserId(memberDto.getUserId())
+            MemberDto findMember = memberService.findByUserId(userId)
                     .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
-            // 입력된 비밀번호와 저장된 해시된 비밀번호 비교
-            boolean isPasswordMatch = passwordEncoder.matches(memberDto.getPassword(), findMember.getPassword());
+            boolean isPasswordMatch = passwordEncoder.matches(password, findMember.getPassword());
             log.info("입력된 비밀번호: {}, 해시된 비밀번호: {}, 비교 결과: {}",
-                    memberDto.getPassword(), findMember.getPassword(), isPasswordMatch);
+                    password, findMember.getPassword(), isPasswordMatch);
 
             if (isPasswordMatch) {
                 return Optional.of(findMember);
             } else {
-                log.info("로그인 실패 - userId : {} 비밀번호 불일치", memberDto.getUserId());
+                log.info("로그인 실패 - userId : {} 비밀번호 불일치", userId);
+                incrementLoginAttempts(findMember.getId());
                 return Optional.empty();
             }
         } catch (IllegalArgumentException e) {
-            log.info("로그인 실패 - userId : {} 존재하지 않음", memberDto.getUserId());
+            log.info("로그인 실패 - userId : {} 존재하지 않음", userId);
             return Optional.empty();
         }
     }
