@@ -91,7 +91,10 @@ public class BucketService {
         // 기존에 해당 회원의 장바구니에 같은 아이템이 있는지 확인
         Bucket existingBucket = bucketRepository.findByMemberAndItem(member, item);
         if (existingBucket != null) {
-            existingBucket.updateQuantity(existingBucket.getQuantity() + quantity);
+            // 기존 장바구니 항목이 있을 경우 수량과 총 가격을 업데이트
+            int newQuantity = existingBucket.getQuantity() + quantity;
+            existingBucket.setQuantity(newQuantity);
+            existingBucket.setItemTotalPrice(item.getItemPrice() * newQuantity); // 총 가격 업데이트
             bucketRepository.save(existingBucket); // 변경 사항 저장
             return converter.convertToBucketDto(existingBucket);
         } else {
@@ -117,15 +120,18 @@ public class BucketService {
             Item item = bucket.getItem();
 
             if (item.getStock() < bucket.getQuantity()) {
+                log.error("재고 부족: 아이템 ID = {}, 요청 수량 = {}, 현재 재고 = {}", item.getId(), bucket.getQuantity(), item.getStock());
                 throw new CustomError(OUT_OF_STOCK);
             }
 
             if (item.getItemPrice() != bucket.getItemTotalPrice() / bucket.getQuantity()) {
+                log.error("가격 변경 감지: 아이템 ID = {}, 기존 가격 = {}, 현재 가격 = {}", item.getId(), bucket.getItemTotalPrice() / bucket.getQuantity(), item.getItemPrice());
                 throw new CustomError(ErrorCode.ITEM_PRICE_CHANGED);
             }
 
             // 3. 상품 판매 가능 여부 확인
             if (item.getItemStatus() != ItemStatus.AVAILABLE) { // AVAILABLE을 ItemStatus.AVAILABLE로 변경
+                log.error("상품 판매 불가 상태: 아이템 ID = {}, 현재 상태 = {}", item.getId(), item.getItemStatus());
                 throw new CustomError(ErrorCode.ITEM_NOT_SALE);
             }
         }
