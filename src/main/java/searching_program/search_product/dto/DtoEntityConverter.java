@@ -61,13 +61,13 @@ public class DtoEntityConverter {
                 .build();
     }
 
-    public Orders convertToOrderEntity(OrderDto orderDto, Member member) {
+    public Orders convertToOrderEntity(OrderDto orderDto) {
         return Orders.builder()
                 .orderDate(orderDto.getOrderDate())
                 .status(orderDto.getStatus())
                 .id(orderDto.getId())
+                .totalAmount(orderDto.getTotalAmount())
                 .statusHistory(new ArrayList<>())
-                .member(member)
                 .createdDate(orderDto.getCreatedDate())
                 .orderItems(new ArrayList<>())
                 .build();
@@ -171,6 +171,7 @@ public class DtoEntityConverter {
 
         return OrderDto.builder()
                 .id(order.getId())
+                .totalAmount(order.getTotalAmount())
                 .orderDate(order.getOrderDate())
                 .orderStatusHistories(statusHistoryDtos)
                 .status(order.getStatus())
