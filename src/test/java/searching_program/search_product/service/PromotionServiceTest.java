@@ -43,7 +43,6 @@ class PromotionServiceTest {
     @BeforeEach
     void setUp() {
         Category category = categoryRepository.save(Category.builder()
-                .id(1L)
                 .name("Test")
                 .build());
 
@@ -51,7 +50,6 @@ class PromotionServiceTest {
 
 
         Item item = itemRepository.save(Item.builder()
-                .id(1L)
                 .itemName("testItem")
                 .category(category)
                 .itemPrice(1000)
