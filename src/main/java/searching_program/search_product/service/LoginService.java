@@ -97,7 +97,7 @@ public class LoginService {
     }
 
     public Optional<MemberDto> loginTryCountLimit(MemberDto memberDto) {
-        Long memberId = memberDto.getId(); // PK 사용
+        Long memberId = memberDto.getId();
         int attempts = loginAttempts.getOrDefault(memberId, 0);
 
         if (attempts >= 5) {
@@ -126,7 +126,6 @@ public class LoginService {
     public void logout(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session != null) {
-            //세션 무효화 이전에 작업 처리
             Long memberId = (Long) session.getAttribute("member");
             log.info("로그아웃 성공, memberId : {}", memberId);
             session.invalidate();
