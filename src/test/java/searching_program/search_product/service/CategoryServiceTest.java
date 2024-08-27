@@ -87,7 +87,9 @@ class CategoryServiceTest {
     @Transactional(readOnly = true)
     @Test
     void getAllCategories() {
-        categoryService.createCategory(categoryDto);
+        if (categoryRepository.findByName(categoryDto.getName()).isEmpty()) {
+            categoryService.createCategory(categoryDto);
+        }
 
         List<CategoryDto> categories = categoryService.getAllCategories();
 
