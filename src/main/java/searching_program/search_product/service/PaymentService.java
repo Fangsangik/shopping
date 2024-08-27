@@ -95,7 +95,6 @@ public class PaymentService {
 
         // 결제 상태가 PENDING 또는 AUTHORIZED가 아닌 경우 결제 취소 불가
         if (payment.getPaymentStatus() != PaymentStatus.PENDING && payment.getPaymentStatus() != PaymentStatus.AUTHORIZED) {
-            throw new CustomError(PAYMENT_CANCELED);
             log.error("결제 취소 실패: 취소할 수 없는 상태인 결제 ID {}", paymentId);
             throw new CustomError(PAYMENT_CANNOT_BE_CANCELED);
         }
@@ -117,15 +116,23 @@ public class PaymentService {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new CustomError(PAYMENT_NOT_FOUND));
 
+        // 결제가 해당 회원의 결제인지 확인
+        if (!payment.getMember().getId().equals(memberId)) {
+            log.error("환불 요청 실패: 회원 ID {}는 결제 ID {}의 소유자가 아닙니다.", memberId, paymentId);
+            throw new CustomError(USER_NOT_FOUND);
+        }
+
+        // 결제 상태가 완료된 경우에만 환불 가능
         if (payment.getPaymentStatus() != PaymentStatus.COMPLETED) {
-            throw new CustomError(PAYMENT_REFUND);
+            log.error("환불 요청 실패: 완료된 결제가 아닙니다. 결제 ID = {}", paymentId);
+            throw new CustomError(PAYMENT_REFUND_NOT_ALLOWED);
         }
 
         // 실제 환불 로직 구현
         payment.setPaymentStatus(PaymentStatus.REFUNDED);
+        paymentRepository.save(payment);
         log.info("결제가 성공적으로 환불되었습니다: Payment ID: {}", payment.getId());
 
-        paymentRepository.save(payment);
         return converter.convertToPaymentDto(payment);
     }
 
