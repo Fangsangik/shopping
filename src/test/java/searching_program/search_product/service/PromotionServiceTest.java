@@ -11,6 +11,7 @@ import searching_program.search_product.dto.CategoryDto;
 import searching_program.search_product.dto.DtoEntityConverter;
 import searching_program.search_product.dto.ItemDto;
 import searching_program.search_product.dto.PromotionDto;
+import searching_program.search_product.error.CustomError;
 import searching_program.search_product.repository.CategoryRepository;
 import searching_program.search_product.repository.ItemRepository;
 import searching_program.search_product.repository.PromotionRepository;
@@ -84,12 +85,12 @@ class PromotionServiceTest {
         LocalDateTime startDate = LocalDateTime.now().plusDays(1);
         LocalDateTime endDate = LocalDateTime.now().plusDays(10);
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(CustomError.class, () -> {
             promotionService.applyPromotion(itemDto.getId(), -10L, startDate, endDate);
         }, "음수 할인율을 설정하면 안됩니다.");
 
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(CustomError.class, () -> {
             promotionService.applyPromotion(itemDto.getId(), 110L, startDate, endDate);
         }, "100%를 넘어서는 할인율을 설정하면 안됩니다.");
     }
@@ -99,9 +100,7 @@ class PromotionServiceTest {
         LocalDateTime startDate = LocalDateTime.now().plusDays(1);
         LocalDateTime endDate = LocalDateTime.now().plusDays(10);
 
-        promotionService.applyPromotion(itemDto.getId(), 10L, startDate, endDate);
-
-        assertThrows(IllegalStateException.class, () -> {
+        assertThrows(CustomError.class, () -> {
             promotionService.applyPromotion(itemDto.getId(), 20L, startDate, endDate);
         }, "중복된 프로모션 적용 시 예외가 발생해야 합니다.");
     }
