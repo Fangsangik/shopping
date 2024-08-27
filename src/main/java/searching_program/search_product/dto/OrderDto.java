@@ -19,6 +19,7 @@ public class OrderDto {
     private String userId;
     private LocalDateTime orderDate;
     private OrderStatus status;
+    private double totalAmount;
     private LocalDateTime createdDate; // 추가: 주문 생성 날짜 및 시간
     private List<OrderStatusHistoryDto> orderStatusHistories = new ArrayList<>();
     private List<OrderItemDto> orderItems = new ArrayList<>();
