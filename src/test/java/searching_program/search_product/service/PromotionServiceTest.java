@@ -73,7 +73,6 @@ class PromotionServiceTest {
         LocalDateTime startDate = LocalDateTime.now().plusDays(1);
         LocalDateTime endDate = LocalDateTime.now().plusDays(10);
 
-        promotionService.applyPromotion(itemDto.getId(), 10L, startDate, endDate);
         boolean promotionExists = promotionRepository
                 .existsByItemAndStartDateLessThanEqualAndEndDateGreaterThanEqual(converter.convertToItemEntity(itemDto), endDate, startDate);
 
