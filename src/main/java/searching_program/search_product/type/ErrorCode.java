@@ -32,7 +32,12 @@ public enum ErrorCode {
     PROMOTION_MUST_NOT_OVER_THAN_HUNDRED(HttpStatus.BAD_REQUEST, "할인율은 100을 초과 할 수 없습니다"),
     START_DATE_MUST_BELOW_END_DATE(HttpStatus.BAD_REQUEST, "시작 날짜가 종료 날짜보다 이후일 수 없습니다."),
     PROMOTION_ALREADY_EXIST(HttpStatus.CONFLICT, "해당 프로모션이 존재 합니다"),
-    REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 리뷰를 찾을 수 없습니다.");
+    REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 리뷰를 찾을 수 없습니다."),
+    CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 카테고리를 찾을 수 없습니다."),
+    NON_UNIQUE_RESULT(HttpStatus.BAD_REQUEST, "해당 결과 값을 찾을 수 없습니다."),
+    PAYMENT_CANNOT_BE_CANCELED(HttpStatus.BAD_REQUEST, "결제가 취소 될 수 없습니다."),
+    PAYMENT_REFUND_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "환불 불가 합니다.");
+
 
     private final HttpStatus status;
     private final String message;
