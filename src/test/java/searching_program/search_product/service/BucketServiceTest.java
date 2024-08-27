@@ -9,6 +9,7 @@ import searching_program.search_product.domain.Bucket;
 import searching_program.search_product.domain.Item;
 import searching_program.search_product.domain.Member;
 import searching_program.search_product.dto.*;
+import searching_program.search_product.error.CustomError;
 import searching_program.search_product.repository.BucketRepository;
 import searching_program.search_product.repository.CategoryRepository;
 import searching_program.search_product.repository.ItemRepository;
@@ -87,11 +88,11 @@ class BucketServiceTest {
     @Test
     void findByItemName() {
         bucketService.addItemToBucket(memberDto.getId(), itemDto.getId(), 10);
-        Bucket bucket = bucketRepository.findByItem_ItemName(itemDto.getItemName());
+        List<Bucket> bucket = bucketRepository.findByItem_ItemName(itemDto.getItemName());
 
         assertThat(bucket).isNotNull();
-        assertThat(bucket.getItem()).isNotNull();
-        assertThat(bucket.getItem().getItemName()).isEqualTo(itemDto.getItemName());
+        assertThat(bucket.get(0).getItem()).isNotNull();
+        assertThat(bucket.get(0).getItem().getItemName()).isEqualTo(itemDto.getItemName());
     }
 
     @Transactional
@@ -136,7 +137,7 @@ class BucketServiceTest {
         int initialQuantity = 10;
         int additionalQuantity = 5;
 
-        BucketDto addItemToBucket = bucketService.addItemToBucket(memberDto.getId(), itemDto.getId(), initialQuantity);
+        BucketDto addBucket = bucketService.addItemToBucket(memberDto.getId(), itemDto.getId(), initialQuantity);
         BucketDto updatedBucket = bucketService.addItemToBucket(memberDto.getId(), itemDto.getId(), additionalQuantity);
 
         assertThat(updatedBucket).isNotNull();
@@ -161,11 +162,11 @@ class BucketServiceTest {
         itemRepository.save(item);
 
         // when & then
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+        CustomError exception = assertThrows(CustomError.class, () ->
                 bucketService.validateBucketItems(memberDto.getId())
         );
 
-        assertThat(exception.getMessage()).contains("더 이상 판매되지 않습니다.");
+        assertThat(exception.getMessage()).contains("더이상 판매되지 않는 아이탬 입니다.");
     }
 
     @Test
@@ -182,10 +183,10 @@ class BucketServiceTest {
         item.setItemPrice(2000);
         itemRepository.save(item);
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+        CustomError exception = assertThrows(CustomError.class, () ->
                 bucketService.validateBucketItems(memberDto.getId())
         );
 
-        assertThat(exception.getMessage()).contains("아이템 가격이 변경되었습니다.");
+        assertThat(exception.getMessage()).contains("아이탬 가격이 변동 되었습니다.");
     }
 }
