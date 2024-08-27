@@ -37,15 +37,13 @@ public class LoginService {
             return false;
         }
 
-        // 비밀번호 해시화
         memberDto.setPassword(encodePassword(memberDto.getPassword()));
-
         Member member = converter.convertToMemberEntity(memberDto);
         memberRepository.save(member);
         return true;
     }
 
-    // 동일 아이디 존재 검사
+    @Transactional
     private boolean validateMember(MemberDto memberDto) {
         if (memberDto.getUserId() == null) {
             throw new IllegalArgumentException("userId 값이 null이면 안됩니다");
@@ -125,6 +123,7 @@ public class LoginService {
         }
     }
 
+    @Transactional
     public void logout(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session != null) {
@@ -135,3 +134,4 @@ public class LoginService {
         }
     }
 }
+
