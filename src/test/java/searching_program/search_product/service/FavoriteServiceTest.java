@@ -100,22 +100,27 @@ class FavoriteServiceTest {
     @Transactional
     @Test
     void removeFavorites() {
-        favoriteService.addFavorites(memberDto.getUserId(), itemDto.getId());
 
-        itemFavoriteRepository.deleteByMemberUserIdAndItemId(memberDto.getUserId(), itemDto.getId());
+        // Then: 즐겨찾기에 아이템이 추가되었는지 확인
+        List<ItemDto> favoriteItems = favoriteService.findFavoriteItemsByUserId(memberDto.getUserId());
+        assertFalse(favoriteItems.isEmpty(), "아이템이 즐겨찾기에 추가되지 않았습니다.");
+
+        // When: 즐겨찾기에서 아이템 삭제
+        favoriteService.removeFavorites(memberDto.getUserId(), itemDto.getId());
+
+        // Then: 즐겨찾기에서 아이템이 제거되었는지 확인
         List<ItemDto> favoriteItemsAfterRemoval = favoriteService.findFavoriteItemsByUserId(memberDto.getUserId());
-        assertTrue(favoriteItemsAfterRemoval.isEmpty());
+        assertTrue(favoriteItemsAfterRemoval.isEmpty(), "아이템이 즐겨찾기에서 제거되지 않았습니다.");
     }
+
 
     @Transactional
     @Test
     void findFavoriteItemsByUserId() {
-
-        favoriteService.addFavorites(memberDto.getUserId(), itemDto.getId());
         List<ItemFavorite> findUserId = itemFavoriteRepository.findByMemberUserId(memberDto.getUserId());
 
         assertFalse(findUserId.isEmpty(), "즐겨찾기 항목이 비어있지 않아야 합니다.");
-        assertEquals(2, findUserId.size(), "즐겨찾기 항목의 수가 예상과 일치해야 합니다.");
+        assertEquals(1, findUserId.size(), "즐겨찾기 항목의 수가 예상과 일치해야 합니다.");
         assertEquals(itemDto.getId(), findUserId.get(0).getItem().getId(), "조회된 아이템의 ID가 예상과 일치해야 합니다."); // itemDto.getItemId()에서 itemDto.getId()로 수정
         assertEquals(memberDto.getUserId(), findUserId.get(0).getMember().getUserId(), "조회된 유저의 ID가 예상과 일치해야 합니다.");
     }

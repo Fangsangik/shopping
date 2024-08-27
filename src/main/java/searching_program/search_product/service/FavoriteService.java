@@ -14,9 +14,9 @@ import searching_program.search_product.repository.ItemRepository;
 import searching_program.search_product.repository.MemberRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FavoriteService {
@@ -30,8 +30,11 @@ public class FavoriteService {
     public void addFavorites(String userId, Long itemId) {
         Member member = memberRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
-        if (member.getUserId() == null) {
-            throw new IllegalArgumentException("userId 값이 null이면 안됩니다.");
+
+        // 중복 확인
+        Optional<ItemFavorite> existingFavorite = itemFavoriteRepository.findByMemberUserIdAndItemId(userId, itemId);
+        if (existingFavorite.isPresent()) {
+            throw new IllegalArgumentException("이미 즐겨찾기에 추가된 아이템입니다.");
         }
 
         Item item = itemRepository.findById(itemId)
@@ -46,17 +49,18 @@ public class FavoriteService {
 
     @Transactional
     public void removeFavorites(String userId, Long itemId) {
-        itemFavoriteRepository.deleteByMemberUserIdAndItemId(userId, itemId);
+        ItemFavorite itemFavorite = itemFavoriteRepository.findByMemberUserIdAndItemId(userId, itemId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 아이템은 즐겨찾기 목록에 존재하지 않습니다. userId: " + userId + ", itemId: " + itemId));
+
+        itemFavoriteRepository.delete(itemFavorite);
     }
 
     @Transactional(readOnly = true)
     public List<ItemDto> findFavoriteItemsByUserId(String userId) {
-        // userId를 기반으로 해당 사용자의 즐겨찾기 아이템을 조회
         List<ItemFavorite> favorites = itemFavoriteRepository.findByMemberUserId(userId);
-
-        // Item 객체들을 ItemDto로 변환
         return favorites.stream()
-                .map(favoriteItem -> converter.convertToItemDto(favoriteItem.getItem()))
+                .map(favoriteItem ->  converter.convertToItemDto(favoriteItem.getItem()))
                 .collect(Collectors.toList());
     }
 }
+
