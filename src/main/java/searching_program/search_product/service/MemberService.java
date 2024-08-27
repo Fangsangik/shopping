@@ -177,7 +177,7 @@ public class MemberService {
     @Transactional
     public void lockMember(Long id) {
         Member member = findMemberById(id);
-        member.setLock(true);
+        member.setAccountLock(true);
         memberRepository.save(member);
     }
 
