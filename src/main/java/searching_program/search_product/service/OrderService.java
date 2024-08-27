@@ -93,7 +93,7 @@ public class OrderService {
     /**
      * 주문 상태 확인 및 변경 메서드
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public OrderDto findOrderStatus(OrderDto orderDto) {
         Orders order = orderRepository.findById(orderDto.getId())
                 .orElseThrow(() -> new CustomError(ORDER_NOT_FOUND));
@@ -203,17 +203,21 @@ public class OrderService {
      */
     @Transactional
     public void saveOrderStatusHistory(Orders order, OrderStatus status) {
+        // 현재 주문의 상태 이력 중 같은 상태가 있는지 확인
         boolean statusExists = order.getStatusHistory().stream()
                 .anyMatch(history -> history.getStatus() == status);
 
+        // 상태 이력이 존재하지 않을 경우에만 새로운 이력을 추가
         if (!statusExists) {
             OrderStatusHistory history = OrderStatusHistory.builder()
-                    .order(order)
-                    .status(status)
-                    .timestamp(LocalDateTime.now())
+                    .order(order)  // 주문 객체를 설정
+                    .status(status)  // 새로운 상태 설정
+                    .timestamp(LocalDateTime.now())  // 현재 시간으로 타임스탬프 설정
                     .build();
 
+            // 주문 객체에 새로운 상태 이력 추가
             order.getStatusHistory().add(history);
+            // 새로운 상태 이력을 데이터베이스에 저장
             orderStatusHistoryRepository.save(history);
         }
     }
