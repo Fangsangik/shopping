@@ -18,7 +18,6 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class LoginService {
 
@@ -28,11 +27,11 @@ public class LoginService {
     private final DtoEntityConverter converter;
     private final Map<Long, Integer> loginAttempts = new HashMap<>();
 
-    // 비밀번호 해시화 메서드
     private String encodePassword(String rawPassword) {
         return passwordEncoder.encode(rawPassword);
     }
 
+    @Transactional
     public boolean registerMember(MemberDto memberDto) {
         if (validateMember(memberDto)) {
             return false;
@@ -60,7 +59,8 @@ public class LoginService {
         return findMember.isPresent();
     }
 
-    public Optional<MemberDto> loginCheck(MemberDto memberDto) {
+    @Transactional
+    public Optional<MemberDto> loginCheck(String userId, String password) {
         try {
             // userId를 통해 회원 정보 조회
             MemberDto findMember = memberService.findByUserId(memberDto.getUserId())
