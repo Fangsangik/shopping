@@ -10,26 +10,28 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import searching_program.search_product.domain.Category;
-import searching_program.search_product.domain.Item;
-import searching_program.search_product.domain.ItemFavorite;
-import searching_program.search_product.domain.Member;
+import searching_program.search_product.domain.*;
+import searching_program.search_product.dto.CategoryDto;
 import searching_program.search_product.dto.DtoEntityConverter;
 import searching_program.search_product.dto.ItemDto;
 import searching_program.search_product.error.CustomError;
 import searching_program.search_product.repository.CategoryRepository;
 import searching_program.search_product.repository.ItemRepository;
 import searching_program.search_product.repository.MemberRepository;
+import searching_program.search_product.repository.PromotionRepository;
 import searching_program.search_product.service.notification.NotificationService;
 import searching_program.search_product.type.ErrorCode;
 import searching_program.search_product.type.ItemStatus;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static searching_program.search_product.type.ErrorCode.ITEM_NOT_FOUND;
+import static searching_program.search_product.type.ErrorCode.PROMOTION_MUST_NOT_OVER_THAN_HUNDRED;
 import static searching_program.search_product.type.ItemStatus.*;
 
 @Slf4j
@@ -39,8 +41,42 @@ public class ItemService {
 
     private final ItemRepository itemRepository;
     private final DtoEntityConverter converter;
+    private final CategoryService categoryService;
     private final NotificationService notificationService;
     private final CategoryRepository categoryRepository;
+    private final PromotionRepository promotionRepository;
+
+    @Transactional
+    public ItemDto createItem(ItemDto itemDto) {
+        // 중복된 아이템 이름이 있는지 검증 (필요한 경우)
+        if (itemRepository.existsByItemName(itemDto.getItemName())) {
+            throw new CustomError(ErrorCode.ITEM_DUPLICATE);
+        }
+
+        // 카테고리 이름 가져오기
+        String categoryName = null;
+        if (itemDto.getCategoryDto() != null) {
+            categoryName = itemDto.getCategoryDto().getName();
+        } else {
+            throw new CustomError(ErrorCode.CATEGORY_NOT_FOUND);
+        }
+
+        // 카테고리 존재 여부 확인 및 처리
+        CategoryDto categoryDto = categoryService.findByName(categoryName);
+        if (categoryDto == null) {
+            throw new CustomError(ErrorCode.CATEGORY_NOT_FOUND);
+        }
+
+
+        // DTO를 엔티티로 변환
+        Item item = converter.convertToItemEntity(itemDto);
+
+        // 아이템 저장
+        Item savedItem = itemRepository.save(item);
+
+        // 저장된 엔티티를 DTO로 변환하여 반환
+        return converter.convertToItemDto(savedItem);
+    }
 
     @Transactional(readOnly = true)
     @Cacheable("itemsByName") //자주 조회되는 데이터를 캐싱 -> DB에 대한 요청을 줄일 수 있음
