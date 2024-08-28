@@ -22,15 +22,13 @@ public class PromotionController {
     private final PromotionService promotionService;
 
     @PostMapping("/apply")
-    public ResponseEntity<String> applyPromotion(
-            @RequestParam Long itemId,
-            @RequestParam Long discountRate,
-            @RequestParam LocalDateTime startDate,
-            @RequestParam LocalDateTime endDate
-            ){
+    public ResponseEntity<String> applyPromotion(@RequestBody PromotionRequest promotionRequest) {
         try {
-            promotionService.applyPromotion(itemId, discountRate, startDate, endDate);
-            log.info("아이탬 ID {}에 대해 프로모션이 성공적으로 적용되었습니다.", itemId);
+            promotionService.applyPromotion(
+                    promotionRequest.getItemId(),
+                    promotionRequest.getCouponCode()
+            );
+            log.info("아이탬 ID {}에 대해 프로모션이 성공적으로 적용되었습니다.", promotionRequest.getItemId());
             return ResponseEntity.ok("프로모션이 성공적으로 적용되었습니다");
         } catch (CustomError e) {
             log.error("프로모션 적용 중 오류 발생 : {}", e.getMessage());
