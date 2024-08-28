@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import searching_program.search_product.dto.BucketDto;
 import searching_program.search_product.error.CustomError;
@@ -14,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Slf4j
-@Controller
+@RestController
 @RequestMapping("/bucket")
 @RequiredArgsConstructor
 public class BucketController {
@@ -36,6 +35,9 @@ public class BucketController {
         }
     }
 
+    /**
+     * http://localhost:8080/bucket/search/ItemName?itemName=mac
+     */
     @GetMapping("/search/ItemName")
     public ResponseEntity<BucketDto> findBYItemName
             (@RequestParam String itemName) {
@@ -43,14 +45,18 @@ public class BucketController {
         return ResponseEntity.ok(byItemName);
     }
 
-    @PostMapping("/addItem/{memberId}/{itemId}")
+    /**
+     *http://localhost:8080/bucket/addItem/1/mac
+     */
+    @PostMapping("/addItem/{memberId}/{itemName}")
     public ResponseEntity<BucketDto> addItem
             (@PathVariable Long memberId,
-             @PathVariable Long itemId,
+             @PathVariable String itemName,
              @RequestBody int quantity) {
-        BucketDto bucketDto = bucketService.addItemToBucket(memberId, itemId, quantity);
+        BucketDto bucketDto = bucketService.addItemToBucket(memberId, itemName, quantity);
         return ResponseEntity.ok(bucketDto);
     }
+
 
     @PostMapping("/validateBucketItem")
     public ResponseEntity<String> validate
@@ -65,7 +71,10 @@ public class BucketController {
         }
     }
 
-    @DeleteMapping("/remove")
+    /**
+     * http://localhost:8080/bucket/remove/1
+     */
+    @DeleteMapping("/remove/{id}")
     public ResponseEntity<String> removeItemFromBucket(@RequestParam Long bucketId) {
         try {
             bucketService.removeItemFromBucket(bucketId);
