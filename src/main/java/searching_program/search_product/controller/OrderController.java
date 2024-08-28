@@ -69,12 +69,16 @@ public class OrderController {
      * 주문 생성 메서드
      */
 
-    @PostMapping
-    public ResponseEntity<OrderDto> createOrder
-    (@Valid @RequestBody OrderDto orderDto,
-     @Valid @RequestBody MemberDto memberDto) {
-        OrderDto createOrder = orderService.createOrder(orderDto, memberDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createOrder);
+    @PostMapping("/create")
+    public ResponseEntity<OrderDto> createOrder(@Valid @RequestBody OrderRequest orderRequest) {
+        // OrderRequest에서 OrderDto와 MemberDto 추출
+        OrderDto orderDto = orderRequest.getOrderDto();
+        MemberDto memberDto = orderRequest.getMemberDto();
+
+        // 서비스 호출하여 주문 생성
+        OrderDto createdOrder = orderService.createOrder(orderDto, memberDto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
     }
 
     @PutMapping("/{orderId}/cancel")
