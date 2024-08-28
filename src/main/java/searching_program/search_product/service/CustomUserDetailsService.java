@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -13,11 +15,13 @@ import searching_program.search_product.domain.Member;
 import searching_program.search_product.repository.MemberRepository;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
-
     private final MemberRepository memberRepository;
 
     @Autowired
@@ -34,6 +38,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 member.getUserId(),
                 member.getPassword(),
-                new ArrayList<>());
+                getAuthorities(member));
+    }
+
+    private Collection<? extends GrantedAuthority> getAuthorities(Member member) {
+        return member.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role))
+                .collect(Collectors.toList());
     }
 }
