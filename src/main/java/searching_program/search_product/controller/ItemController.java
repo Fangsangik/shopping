@@ -14,7 +14,7 @@ import searching_program.search_product.service.ItemService;
 import java.util.List;
 
 @Slf4j
-@Controller
+@RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
 public class ItemController {
@@ -27,13 +27,22 @@ public class ItemController {
         return ResponseEntity.ok(byItemName);
     }
 
+    /**
+     http://localhost:8080/items/search/multipleName?itemName1=airpods&itemName2=mac
+     */
     @GetMapping("/search/multipleName")
     public ResponseEntity<List<ItemDto>> findByItemNames
             (@RequestParam String itemName1, @RequestParam String itemName2) {
+        log.debug("Received itemName1: {}", itemName1);
+        log.debug("Received itemName2: {}", itemName2);
+
         List<ItemDto> byItemNames = itemService.findByItemNames(itemName1, itemName2);
         return ResponseEntity.ok(byItemNames);
     }
 
+    /**
+     *http://localhost:8080/items/search/multiple?itemName=airpods&minPrice=100&maxPrice=1000&categoryName=전자기기&pageNumber=0&pageSize=10
+     */
     @GetMapping("/search/multiple")
     public ResponseEntity<Page<Item>> multipleSearch
             (@RequestParam(required = false) String itemName,
