@@ -7,7 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import searching_program.search_product.dto.MemberDto;
+import searching_program.search_product.error.CustomError;
 import searching_program.search_product.service.LoginService;
+import searching_program.search_product.service.MemberService;
 
 
 import javax.servlet.http.HttpServletRequest;
