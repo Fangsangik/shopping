@@ -123,10 +123,17 @@ public class OrderService {
      * 주문 조회 메서드 (아이템 이름으로 조회)
      */
     @Transactional(readOnly = true)
-    public Page<OrderDto> findByItemName(ItemDto itemDto, int pageNumber) {
-        Pageable pageable = PageRequest.of(pageNumber, 5, Sort.by("itemName").ascending());
-        Page<Orders> orders = orderRepository.findByItemItemName(itemDto.getItemName(), pageable);
-        return orders.map(converter::convertToOrderDto);
+    public Page<OrderDto> findByItemName(ItemDto itemDto, int page, int size) {
+        // PageRequest 객체 생성
+        PageRequest pageRequest = PageRequest.of(page, size);
+
+        // itemName으로 주문을 검색하는 로직 구현
+        String itemName = itemDto.getItemName();
+
+        // Orders 엔티티를 검색하고 결과를 OrderDto로 변환하여 반환
+        Page<Orders> ordersPage = orderRepository.findByItem_ItemNameContaining(itemName, pageRequest);
+
+        return ordersPage.map(converter::convertToOrderDto);
     }
 
     /**
