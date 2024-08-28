@@ -90,8 +90,7 @@ public class ItemService {
     @Transactional(readOnly = true)
     @Cacheable("itemsByNames") //자주 조회되는 데이터를 캐싱 -> DB에 대한 요청을 줄일 수 있음
     public List<ItemDto> findByItemNames(String itemName1, String itemName2) {
-        List<Item> items = itemRepository
-                .findByItemNameContainingOrItemNameContaining
+        List<Item> items = itemRepository.findByItemNameContainingOrItemNameContaining
                         (itemName1, itemName2);
         return items.stream()
                 .map(converter::convertToItemDto)
@@ -101,7 +100,7 @@ public class ItemService {
     @Transactional(readOnly = true)
     public ItemDto findById(Long itemId) {
         Item findItem = itemRepository.findById(itemId)
-                .orElseThrow(() -> new CustomError(ErrorCode.ITEM_NOT_FOUND));
+                .orElseThrow(() -> new CustomError(ITEM_NOT_FOUND));
         return converter.convertToItemDto(findItem);
     }
 
