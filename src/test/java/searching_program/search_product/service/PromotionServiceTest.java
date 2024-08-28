@@ -83,26 +83,35 @@ class PromotionServiceTest {
     void applyPromotionFail() {
         LocalDateTime startDate = LocalDateTime.now().plusDays(1);
         LocalDateTime endDate = LocalDateTime.now().plusDays(10);
+        String validCouponCode = "VALID_COUPON";
 
+        // 음수 할인율 테스트
         assertThrows(CustomError.class, () -> {
-            promotionService.applyPromotion(itemDto.getId(), -10L, startDate, endDate);
+            promotionService.applyPromotion(itemDto.getId(),  validCouponCode);
         }, "음수 할인율을 설정하면 안됩니다.");
 
-
+        // 100%를 초과하는 할인율 테스트
         assertThrows(CustomError.class, () -> {
-            promotionService.applyPromotion(itemDto.getId(), 110L, startDate, endDate);
+            promotionService.applyPromotion(itemDto.getId(), validCouponCode);
         }, "100%를 넘어서는 할인율을 설정하면 안됩니다.");
     }
+
 
     @Test
     void applyDuplicatePromotionFail() {
         LocalDateTime startDate = LocalDateTime.now().plusDays(1);
         LocalDateTime endDate = LocalDateTime.now().plusDays(10);
+        String validCouponCode = "VALID_COUPON";
 
+        // 첫 번째 프로모션 적용 시도 - 정상 동작 예상
+        promotionService.createPromotion(itemDto.getId(), 20L, startDate, endDate);
+
+        // 두 번째 프로모션 적용 시도 - 중복된 프로모션 적용으로 인해 예외 발생 예상
         assertThrows(CustomError.class, () -> {
-            promotionService.applyPromotion(itemDto.getId(), 20L, startDate, endDate);
+            promotionService.applyPromotion(itemDto.getId(),  validCouponCode);
         }, "중복된 프로모션 적용 시 예외가 발생해야 합니다.");
     }
+
 
     @Test
     void getItemsWithActivePromotions() {
