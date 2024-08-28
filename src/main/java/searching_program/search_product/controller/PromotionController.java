@@ -58,6 +58,26 @@ public class PromotionController {
         }
     }
 
+    @PostMapping("/create")
+    public ResponseEntity<String> createPromotion(@RequestBody PromotionRequest promotionRequest) {
+        try {
+            promotionService.createPromotion(
+                    promotionRequest.getItemId(),
+                    promotionRequest.getDiscountRate(),
+                    promotionRequest.getStartDate(),
+                    promotionRequest.getEndDate()
+            );
+            log.info("아이탬 ID {}에 대해 프로모션이 성공적으로 생성 및 적용되었습니다.", promotionRequest.getItemId());
+            return ResponseEntity.ok("프로모션이 성공적으로 생성 및 적용되었습니다");
+        } catch (CustomError e) {
+            log.error("프로모션 생성 중 오류 발생 : {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            log.error("서버 error ; {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     @GetMapping("/getActivePromotion")
     public ResponseEntity<List<ItemDto>> activePromotions() {
         try {
