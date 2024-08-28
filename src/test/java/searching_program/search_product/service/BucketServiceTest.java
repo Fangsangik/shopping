@@ -71,7 +71,7 @@ class BucketServiceTest {
     @Transactional
     @Test
     void test_findAll() {
-        bucketService.addItemToBucket(memberDto.getId(), itemDto.getId(), 10);
+        bucketService.addItemToBucket(memberDto.getId(), itemDto.getItemName(), 10);
         List<Bucket> findAll = bucketRepository.findAll();
         assertEquals(1, findAll.size(), "장바구니 항목의 크가가 예상과 다릅니다.");
 
@@ -87,7 +87,7 @@ class BucketServiceTest {
     @Transactional
     @Test
     void findByItemName() {
-        bucketService.addItemToBucket(memberDto.getId(), itemDto.getId(), 10);
+        bucketService.addItemToBucket(memberDto.getId(), itemDto.getItemName(), 10);
         List<Bucket> bucket = bucketRepository.findByItem_ItemName(itemDto.getItemName());
 
         assertThat(bucket).isNotNull();
@@ -100,7 +100,7 @@ class BucketServiceTest {
     void deleteBucketTest() {
         // given
         // 장바구니에 항목을 추가
-        BucketDto addedBucket = bucketService.addItemToBucket(memberDto.getId(), itemDto.getId(), 10);
+        BucketDto addedBucket = bucketService.addItemToBucket(memberDto.getId(), itemDto.getItemName(), 10);
 
         // 장바구니에 항목이 추가되었는지 검증
         assertThat(addedBucket).isNotNull();
@@ -124,7 +124,7 @@ class BucketServiceTest {
     void addItemToBucket() {
         int initialQuantity = 10;
 
-        BucketDto addBucket = bucketService.addItemToBucket(memberDto.getId(), itemDto.getId(), initialQuantity);
+        BucketDto addBucket = bucketService.addItemToBucket(memberDto.getId(), itemDto.getItemName(), initialQuantity);
 
         assertThat(addBucket).isNotNull();
         assertThat(addBucket.getItemName()).isEqualTo(itemDto.getItemName());
@@ -137,8 +137,8 @@ class BucketServiceTest {
         int initialQuantity = 10;
         int additionalQuantity = 5;
 
-        BucketDto addBucket = bucketService.addItemToBucket(memberDto.getId(), itemDto.getId(), initialQuantity);
-        BucketDto updatedBucket = bucketService.addItemToBucket(memberDto.getId(), itemDto.getId(), additionalQuantity);
+        BucketDto addBucket = bucketService.addItemToBucket(memberDto.getId(), itemDto.getItemName(), initialQuantity);
+        BucketDto updatedBucket = bucketService.addItemToBucket(memberDto.getId(), itemDto.getItemName(), additionalQuantity);
 
         assertThat(updatedBucket).isNotNull();
         assertThat(updatedBucket.getQuantity()).isEqualTo(initialQuantity + additionalQuantity);
@@ -154,7 +154,7 @@ class BucketServiceTest {
     @Test
     void validateBucketItemsWithUnavailableItemTest() {
         // given
-        BucketDto addedBucket = bucketService.addItemToBucket(memberDto.getId(), itemDto.getId(), 10);
+        BucketDto addedBucket = bucketService.addItemToBucket(memberDto.getId(), itemDto.getItemName(), 10);
 
         // 상태 변경 시뮬레이션
         Item item = itemRepository.findById(itemDto.getId()).orElseThrow();
@@ -171,13 +171,13 @@ class BucketServiceTest {
 
     @Test
     void validateBucketItemTest() {
-        bucketService.addItemToBucket(memberDto.getId(), itemDto.getId(), 10);
+        bucketService.addItemToBucket(memberDto.getId(), itemDto.getItemName(), 10);
         bucketService.validateBucketItems(memberDto.getId());
     }
 
     @Test
     void priceChangeTest() {
-        BucketDto addItemToBucket = bucketService.addItemToBucket(memberDto.getId(), itemDto.getId(), 10);
+        BucketDto addItemToBucket = bucketService.addItemToBucket(memberDto.getId(), itemDto.getItemName(), 10);
 
         Item item = itemRepository.findById(itemDto.getId()).orElseThrow(() -> new IllegalArgumentException("아이탬을 찾을 수 없습니다."));
         item.setItemPrice(2000);
