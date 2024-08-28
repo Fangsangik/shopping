@@ -31,6 +31,7 @@ public class DtoEntityConverter {
     public Item convertToItemEntity(ItemDto itemDto) {
         return Item.builder()
                 .id(itemDto.getId())
+                .discountedPrice(itemDto.getDiscountedPrice())
                 .itemPrice(itemDto.getItemPrice())
                 .lowPrice(itemDto.getLowPrice())
                 .maxPrice(itemDto.getMaxPrice())
@@ -86,6 +87,7 @@ public class DtoEntityConverter {
     public Promotion convertToPromotionEntity(PromotionDto promotionDto, Item item) {
         return Promotion.builder()
                 .startDate(promotionDto.getStartDate())
+                .couponCode(promotionDto.getCouponCode())
                 .endDate(promotionDto.getEndDate())
                 .discountRate(promotionDto.getDiscountRate())
                 .item(item)
@@ -134,6 +136,7 @@ public class DtoEntityConverter {
     public ItemDto convertToItemDto(Item item) {
         return ItemDto.builder()
                 .id(item.getId())
+                .discountedPrice(item.getDiscountedPrice())
                 .image(item.getImage())
                 .itemName(item.getItemName())
                 .itemPrice(item.getItemPrice())
