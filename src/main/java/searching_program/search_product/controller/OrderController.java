@@ -81,7 +81,8 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
     }
 
-    @PutMapping("/{orderId}/cancel")
+
+    @PostMapping("/cancel/{orderId}")
     public ResponseEntity<OrderDto> cancelOrder(@PathVariable Long orderId) {
         OrderDto orderDto = orderService.cancelOrder(orderId);
         return ResponseEntity.ok(orderDto);
