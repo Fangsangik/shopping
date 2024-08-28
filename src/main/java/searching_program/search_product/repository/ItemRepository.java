@@ -29,4 +29,6 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findByStockLessThanEqualAndItemStatus(int stock, ItemStatus itemStatus);
 
     List<Item> findByItemNameContainingOrItemNameContaining(String itemName1, String itemName2);
+
+    boolean existsByItemName(String itemName);
 }
