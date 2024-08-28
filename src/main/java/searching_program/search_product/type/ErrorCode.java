@@ -36,7 +36,11 @@ public enum ErrorCode {
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 카테고리를 찾을 수 없습니다."),
     NON_UNIQUE_RESULT(HttpStatus.BAD_REQUEST, "해당 결과 값을 찾을 수 없습니다."),
     PAYMENT_CANNOT_BE_CANCELED(HttpStatus.BAD_REQUEST, "결제가 취소 될 수 없습니다."),
-    PAYMENT_REFUND_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "환불 불가 합니다.");
+    PAYMENT_REFUND_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "환불 불가 합니다."),
+    ACCOUNT_IS_LOCKED(HttpStatus.BAD_REQUEST, "계정이 잠겼습니다"),
+    ITEM_DUPLICATE(HttpStatus.CONFLICT, "아이탬이 중복됩니다."),
+    NO_ACTIVE_PROMOTION(HttpStatus.NOT_FOUND, "활성화된 쿠폰이 아닙니다."),
+    INVALID_COUPON_CODE(HttpStatus.BAD_REQUEST, "사용이 불가능한 쿠폰입니다");
 
 
     private final HttpStatus status;
