@@ -58,7 +58,7 @@ public class OrderController {
      * http://localhost:8080/orders/members/ik0605?pageNumber=0&size=10
      */
     @GetMapping("/members/{userId}")
-    public ResponseEntity<Page<OrderDto>> findOrderMembers(@RequestParam String userId,
+    public ResponseEntity<Page<OrderDto>> findOrderMembers(@PathVariable String userId,  // @RequestParam -> @PathVariable로 변경
                                                            @RequestParam(defaultValue = "0") int pageNumber,
                                                            @RequestParam(defaultValue = "10") int size) {
         Page<OrderDto> rst = orderService.findOrdersByMember(userId, pageNumber, size);
