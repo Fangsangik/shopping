@@ -1,5 +1,6 @@
 package searching_program.search_product.service;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import searching_program.search_product.domain.Member;
 import searching_program.search_product.dto.DtoEntityConverter;
 import searching_program.search_product.dto.MemberDto;
+import searching_program.search_product.error.CustomError;
 import searching_program.search_product.repository.MemberRepository;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 임베디드 데이터베이스로 교체하지 않도록 설정
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 실제 데이터베이스 사용
 class LoginServiceTest {
 
     @Autowired
@@ -42,32 +44,21 @@ class LoginServiceTest {
 
     private MemberDto member;
 
-    LoginServiceTest() {
-    }
-
     @BeforeEach
     void setUp() {
-
+        // Given
         memberRepository.deleteAll();
 
         this.member = MemberDto.builder()
                 .userId("userId")
-                .password(passwordEncoder.encode("testPassword"))
+                .password("testPassword")  // 실제 비밀번호로 설정
+                .username("Test User")
                 .build();
 
         Member entityMember = converter.convertToMemberEntity(member);
-//        System.out.println("Before saving to DB, member password: " + entityMember.getPassword()); //convertToMemberDto 부분에 password 값 빠져있었음
-
+        entityMember.setPassword(passwordEncoder.encode(member.getPassword()));
         Member savedMember = memberRepository.save(entityMember);
-        MemberDto dtoMember = converter.convertToMemberDto(savedMember);
-
-//        System.out.println("After saving to DB, dtoMember password: " + dtoMember.getPassword());
-
-//        System.out.println("savedMember = " + savedMember);
-//        System.out.println("dtoMember = " + dtoMember);
-
-        this.member = dtoMember;
-
+        this.member = converter.convertToMemberDto(savedMember);
     }
 
     @Test
@@ -80,10 +71,11 @@ class LoginServiceTest {
         memberDto.setUsername("Test User");
 
         // When
-        boolean isRegistered = loginService.registerMember(memberDto);
+        MemberDto createMember = memberService.createMember(memberDto);
 
         // Then
-        assertThat(isRegistered).isTrue();
+        assertThat(createMember).isNotNull();
+        assertThat(createMember.getUserId()).isEqualTo("newUser");
 
         Member savedMember = memberRepository.findByUserId(memberDto.getUserId()).orElse(null);
         assertThat(savedMember).isNotNull();
@@ -95,67 +87,79 @@ class LoginServiceTest {
     void registerMember_nullUserId() {
         member.setUserId(null);
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            loginService.registerMember(member);
+        assertThrows(CustomError.class, () -> {
+            memberService.createMember(member);
         });
     }
 
     @Test
     void loginSuccess() {
-        MemberDto loginAttempt = MemberDto.builder()
-                .userId("userId")
-                .password("testPassword")
-                .build();
 
-        Optional<MemberDto> rst = loginService.loginCheck(loginAttempt.getUserId(), loginAttempt.getPassword());
+        // When
+        Optional<MemberDto> rst = loginService.loginCheck(member.getUserId(), "testPassword"); // 원시 비밀번호 사용
 
-        System.out.println("rst = " + rst);
-
+        // Then
         assertThat(rst).isPresent();
-        assertThat(rst.get().getUserId()).isEqualTo(loginAttempt.getUserId());
+        assertThat(rst.get().getUserId()).isEqualTo(member.getUserId());
     }
 
     @Test
-    void wrong_password() {
+    void wrongPassword() {
+        // Given
         MemberDto memberDto = MemberDto.builder()
                 .userId("userId")
-                .password("123")
+                .password("wrongPassword") // 잘못된 비밀번호
                 .build();
 
+        // When
         Optional<MemberDto> rst = loginService.loginCheck(memberDto.getUserId(), memberDto.getPassword());
+
+        // Then
         assertThat(rst).isNotPresent();
     }
 
     @Test
     void loginTryCountLimit() {
-        MemberDto memberDto = MemberDto.builder()
-                .id(member.getId())
-                .password("wrongPassword")
+        // Given
+        // 잘못된 비밀번호로 테스트할 DTO
+        MemberDto wrongPasswordDto = MemberDto.builder()
+                .userId("userId")
+                .password("wrongPassword") // 잘못된 비밀번호 사용
                 .build();
 
+        // When - 비밀번호 4회 틀리게 입력
         for (int i = 0; i < 4; i++) {
-            loginService.loginTryCountLimit(memberDto);
+            Optional<MemberDto> loginResult = loginService.loginCheck(wrongPasswordDto.getUserId(), wrongPasswordDto.getPassword());
+            assertThat(loginResult).isEmpty(); // 로그인 실패해야 함
         }
 
-        assertThat(loginService.loginTryCountLimit(memberDto)).isEmpty();
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            loginService.loginTryCountLimit(memberDto);
+        // Then - 5번째 시도 시 계정이 잠기는지 확인
+        CustomError exception = assertThrows(CustomError.class, () -> {
+            loginService.loginCheck(wrongPasswordDto.getUserId(), wrongPasswordDto.getPassword());
         });
-        assertThat(exception.getMessage()).isEqualTo("계정이 잠겼습니다.");
+
+        // 예외 메시지 확인
+        assertThat(exception.getMessage()).isEqualTo("계정이 잠겼습니다");
+
+        // 로그인 시도 횟수 확인
+        Member savedMember = memberRepository.findByUserId("userId").orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+        int loginAttempts = loginService.getLoginAttempts(savedMember.getId());
+        assertThat(loginAttempts).isEqualTo(5); // 5회 시도 후 계정 잠김 확인
 
     }
 
+
     @Test
     void logout() {
-        //실제 HttpServletRequest와 HttpSesion 객체를 사용하는 코드
+        // Given
         HttpServletRequest request = new MockHttpServletRequest();
         HttpSession session = request.getSession();
-        session.setAttribute("member", 1L);
+        session.setAttribute("member", member.getId());
 
+        // When
         loginService.logout(request);
 
-        // 세션이 무효화되었는지 확인
+        // Then - 세션이 무효화되었는지 확인
         assertThrows(IllegalStateException.class, () -> {
             session.getAttribute("member");
         });
