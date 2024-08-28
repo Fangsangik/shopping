@@ -36,6 +36,7 @@ public class OrderService {
     private final DtoEntityConverter converter;
     private final PaymentService paymentService;
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
+    private final BucketRepository bucketRepository;
 
     /**
      * 주문 생성 메서드
@@ -89,7 +90,33 @@ public class OrderService {
         // 결제 서비스 호출
         paymentService.processPayment(member.getId(), savedOrder.getId(), orderDto.getTotalAmount());
 
+        // 장바구니에 있는 아이템 주문 후 제거
+        removeOrderedItemsFromBucket(member, orderDto);
+
         return converter.convertToOrderDto(savedOrder);
+    }
+
+    private void removeOrderedItemsFromBucket(Member member, OrderDto orderDto) {
+        log.info("장바구니에서 주문된 아이템 제거 시작: Member ID = {}", member.getId());
+
+        for (OrderItemDto orderItemDto : orderDto.getOrderItems()) {
+            Long itemId = orderItemDto.getItemId();
+            if (itemId == null) {
+                log.error("OrderItemDto의 itemId가 null입니다.");
+                throw new IllegalArgumentException("Item ID must not be null");
+            }
+
+            Item item = itemRepository.findById(itemId)
+                    .orElseThrow(() -> new CustomError(ITEM_NOT_FOUND));
+
+            Bucket bucket = bucketRepository.findByMemberAndItem(member, item);
+            if (bucket != null) {
+                log.info("장바구니에서 아이템 제거: Member ID = {}, Item ID = {}", member.getId(), item.getId());
+                bucketRepository.delete(bucket);
+            } else {
+                log.warn("장바구니에 아이템이 존재하지 않음: Member ID = {}, Item ID = {}", member.getId(), item.getId());
+            }
+        }
     }
 
     /**
