@@ -12,8 +12,9 @@ import java.util.Optional;
 
 public interface PromotionRepository extends JpaRepository<Promotion, Long> {
 
-    @Query("SELECT p.item FROM Promotion p WHERE :now BETWEEN p.startDate AND p.endDate")
-    List<Item> findItemsWithActivePromotions(@Param("now") LocalDateTime now);
+    // 현재 활성화된 프로모션을 찾는 메서드
+    @Query("SELECT p.item FROM Promotion p WHERE :currentDate BETWEEN p.startDate AND p.endDate")
+    List<Item> findItemsWithActivePromotions(@Param("currentDate") LocalDateTime currentDate);
 
     boolean existsByItemAndStartDateLessThanEqualAndEndDateGreaterThanEqual(Item item, LocalDateTime endDate, LocalDateTime startDate);
     Promotion findFirstByItemAndStartDateLessThanEqualAndEndDateGreaterThanEqual(Item item, LocalDateTime startDate, LocalDateTime endDate);
