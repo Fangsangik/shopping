@@ -3,6 +3,7 @@ package searching_program.search_product.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -16,7 +17,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
-@Controller
+@RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
 public class OrderController {
@@ -28,6 +29,7 @@ public class OrderController {
 
     /**
      * 아이템 이름으로 주문 조회 메서드
+     * http://localhost:8080/orders/search?itemName=mac&page=0&size=4
      */
     @GetMapping("/search")
     public ResponseEntity<Page<OrderDto>> findByItemName(
@@ -36,12 +38,14 @@ public class OrderController {
             @RequestParam(defaultValue = "4") int size) {
         ItemDto itemDto = new ItemDto();
         itemDto.setItemName(itemName);
-        Page<OrderDto> orderDtoPage = orderService.findByItemName(itemDto, page);
+
+        Page<OrderDto> orderDtoPage = orderService.findByItemName(itemDto, page, size);
         return ResponseEntity.ok(orderDtoPage);
     }
 
     /**
      * 주문 상태 조회 메서드
+     * http://localhost:8080/orders/1/status
      */
     @GetMapping("/{orderId}/status")
     public ResponseEntity<OrderDto> findStatus(@PathVariable Long orderId) {
@@ -51,6 +55,7 @@ public class OrderController {
 
     /**
      * 회원별 모든 주문 조회 메서드
+     * http://localhost:8080/orders/members/ik0605?pageNumber=0&size=10
      */
     @GetMapping("/members/{userId}")
     public ResponseEntity<Page<OrderDto>> findOrderMembers(@RequestParam String userId,
