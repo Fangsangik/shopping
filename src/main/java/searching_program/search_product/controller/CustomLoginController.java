@@ -22,44 +22,40 @@ import java.util.Optional;
 public class CustomLoginController {
 
     private final LoginService loginService;
+    private final MemberService memberService;
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestParam String userId, @RequestParam String password, HttpServletRequest request) {
+    @PostMapping("/auth/login")
+    public ResponseEntity<?> login(@RequestParam String userId,
+                                   @RequestParam String password,
+                                   HttpServletRequest request) {
+        if (userId == null || password == null) {
+            log.warn("로그인 요청 실패: userId 또는 password가 제공되지 않음");
+            return ResponseEntity.badRequest().body("userId와 password는 필수 입력값입니다.");
+        }
+
         Optional<MemberDto> memberDtoOptional = loginService.loginCheck(userId, password);
 
         if (memberDtoOptional.isPresent()) {
             loginService.createSession(request, memberDtoOptional.get());
+            log.info("로그인 성공: userId={}", userId);
             return ResponseEntity.ok("로그인 성공");
         } else {
+            log.warn("로그인 실패: userId={}", userId);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패. 사용자명이나 비밀번호를 확인하세요.");
         }
     }
 
-    @PostMapping("/logout")
+    @PostMapping("/auth/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         loginService.logout(request);
+        log.info("로그아웃 성공");
         return ResponseEntity.ok("로그아웃 성공");
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody MemberDto memberDto, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            log.warn("회원가입 유효성 검사 실패: {}", bindingResult.getAllErrors());
-            return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
-        }
-
-        boolean isRegistered = loginService.registerMember(memberDto);
-
-        if (isRegistered) {
-            return ResponseEntity.status(HttpStatus.CREATED).body("회원가입 성공");
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("회원가입 실패: 이미 존재하는 회원입니다.");
-        }
     }
 
     @GetMapping("/login-attempts")
     public ResponseEntity<?> checkLoginAttempts(@RequestParam Long memberId) {
-        int attempts = loginService.getLoginAttempts(memberId); // Assuming this method exists
+        int attempts = loginService.getLoginAttempts(memberId);
+        log.info("로그인 시도 횟수 조회: memberId={}, attempts={}", memberId, attempts);
         return ResponseEntity.ok(attempts);
     }
 }
