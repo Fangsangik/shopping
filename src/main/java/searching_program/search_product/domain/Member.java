@@ -1,6 +1,7 @@
 package searching_program.search_product.domain;
 
 import lombok.*;
+import org.hibernate.annotations.Columns;
 import org.springframework.format.annotation.DateTimeFormat;
 import searching_program.search_product.type.Grade;
 import searching_program.search_product.type.MemberStatus;
@@ -9,7 +10,9 @@ import searching_program.search_product.type.PaymentMethod;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -23,6 +26,11 @@ public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "member_roles", joinColumns = @JoinColumn(name = "member_id"))
+    @Column(name = "role")
+    private Set<String> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Payment> payments = new ArrayList<>();
