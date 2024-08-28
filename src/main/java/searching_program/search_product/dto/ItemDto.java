@@ -20,5 +20,6 @@ public class ItemDto {
     private int myPrice;
     private int stock;
     private CategoryDto categoryDto;
+    private Double discountedPrice;
 }
 
