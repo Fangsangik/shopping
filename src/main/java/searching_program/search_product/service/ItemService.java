@@ -197,4 +197,21 @@ public class ItemService {
             notificationService.sendLowStockAlert(item); // 알림 발송
         }
     }
+
+    // 할인된 가격 계산 메서드
+    public double calculateDiscountedPrice(Long itemId, Long discountRate) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new CustomError(ITEM_NOT_FOUND));
+
+        if (discountRate == null || discountRate <= 0) {
+            return item.getItemPrice();
+        }
+
+        if (discountRate > 100) {
+            throw new CustomError(PROMOTION_MUST_NOT_OVER_THAN_HUNDRED);
+        }
+
+        double discountMultiplier = (100.0 - discountRate) / 100.0;
+        return item.getItemPrice() * discountMultiplier;
+    }
 }
