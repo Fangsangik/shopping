@@ -44,6 +44,18 @@ public class OrderService {
     public OrderDto createOrder(OrderDto orderDto, MemberDto memberDto) {
         log.info("주문 생성 요청: MemberId = {}, OrderDate = {}", memberDto.getId(), orderDto.getOrderDate());
 
+        // MemberDto의 ID 검증
+        if (memberDto.getId() == null) {
+            log.error("MemberDto의 ID가 null입니다.");
+            throw new CustomError(INVALID_INPUT_VALUE);
+        }
+
+        // OrderDto의 주문 항목 검증
+        if (orderDto.getOrderItems() == null || orderDto.getOrderItems().isEmpty()) {
+            log.error("OrderDto의 주문 항목이 비어있습니다.");
+            throw new CustomError(INVALID_INPUT_VALUE);
+        }
+
         Member member = converter.convertToMemberEntity(memberDto);
         Orders orders = converter.convertToOrderEntity(orderDto);
         orders.setMember(member);
