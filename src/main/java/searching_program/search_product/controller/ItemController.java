@@ -55,6 +55,19 @@ public class ItemController {
         return ResponseEntity.ok(items);
     }
 
+    /**
+     *category 만들고 만들어야 합니다
+     */
+    @PostMapping("/create")
+    public ResponseEntity<ItemDto> create
+            (@RequestBody ItemDto itemDto) {
+        ItemDto item = itemService.createItem(itemDto);
+        return ResponseEntity.ok(item);
+    }
+
+    /**
+     *http://localhost:8080/items/search/itemPrice?price=10000
+     */
     @GetMapping("/search/itemPrice")
     public ResponseEntity<Page<ItemDto>> findByPrice
             (@RequestParam(required = false) Integer price,
