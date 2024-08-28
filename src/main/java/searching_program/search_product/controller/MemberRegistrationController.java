@@ -14,7 +14,7 @@ import searching_program.search_product.service.MemberService;
 import javax.validation.Valid;
 
 @Slf4j
-@Controller
+@RestController
 @RequiredArgsConstructor
 public class MemberRegistrationController {
 
