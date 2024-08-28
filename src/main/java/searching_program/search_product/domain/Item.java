@@ -27,6 +27,7 @@ public class Item {
     private int maxPrice;
     private int myPrice;
     private int stock;
+    private Double discountedPrice;
 
     @Enumerated(EnumType.STRING)
     private ItemStatus itemStatus;
