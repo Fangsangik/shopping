@@ -2,48 +2,41 @@ package searching_program.search_product.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import searching_program.search_product.dto.MemberDto;
+import searching_program.search_product.error.CustomError;
 import searching_program.search_product.service.MemberService;
 
 import javax.validation.Valid;
+import java.util.Map;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/login")
 public class MemberRegistrationController {
 
     private final MemberService memberService;
 
-    @GetMapping("/register")
-    public String registerPage(Model model) {
-        model.addAttribute("memberDto", new MemberDto());
-        return "register";
-    }
 
+    // 회원가입
     @PostMapping("/register")
-    public String registerMember(
-            @Valid @ModelAttribute MemberDto memberDto,
-            BindingResult bindingResult,
-            Model model) {
-
+    public ResponseEntity<?> register(@Valid @RequestBody MemberDto memberDto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             log.warn("회원가입 유효성 검사 실패: {}", bindingResult.getAllErrors());
-            return "register";
+            return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
         }
 
         try {
-            memberService.createMember(memberDto);
-            return "redirect:/login";
-        } catch (IllegalArgumentException e) {
+            MemberDto createdMember = memberService.createMember(memberDto);
+            log.info("회원가입 성공: userId={}", createdMember.getUserId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "회원가입 성공", "member", createdMember));
+        } catch (CustomError e) {
             log.error("회원가입 실패: {}", e.getMessage());
-            model.addAttribute("error", e.getMessage());
-            return "register";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 }
