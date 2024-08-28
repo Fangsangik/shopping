@@ -13,7 +13,7 @@ import searching_program.search_product.error.CustomError;
 import searching_program.search_product.service.FavoriteService;
 
 @Slf4j
-@Controller
+@RestController
 @RequestMapping("/favorite")
 @RequiredArgsConstructor
 public class FavoriteItemController {
