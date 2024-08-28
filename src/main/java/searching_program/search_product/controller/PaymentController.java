@@ -13,7 +13,7 @@ import searching_program.search_product.service.PaymentService;
 import java.util.List;
 
 @Slf4j
-@Controller
+@RestController
 @RequestMapping("/payment")
 @RequiredArgsConstructor
 public class PaymentController {
