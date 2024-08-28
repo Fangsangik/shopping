@@ -78,6 +78,9 @@ public class ItemController {
         return ResponseEntity.ok(byItemPrice);
     }
 
+    /**
+     *http://localhost:8080/items/search/itemPriceRange?minPrice=10000&maxPrice=20000&categoryName=전자기기&pageNumber=0&pageSize=10
+     */
     @GetMapping("/search/itemPriceRange")
     public ResponseEntity<Page<ItemDto>> findPriceRange(
             @RequestParam(required = false, defaultValue = "0") int minPrice,
@@ -86,6 +89,12 @@ public class ItemController {
             @RequestParam(defaultValue = "5") int pageSize) {
         Page<ItemDto> byItemPriceRange = itemService.findByItemPriceRange(minPrice, maxPrice, pageNumber, pageSize);
         return ResponseEntity.ok(byItemPriceRange);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ItemDto> getItem(@PathVariable Long id) {
+        ItemDto itemDto = itemService.getItemWithPromotion(id);
+        return ResponseEntity.ok(itemDto);
     }
 
     @PostMapping("/notify")
