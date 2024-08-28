@@ -13,20 +13,26 @@ import searching_program.search_product.service.CategoryService;
 import java.util.List;
 
 @Slf4j
-@Controller
+@RestController
 @RequestMapping("/category")
 @RequiredArgsConstructor
 public class CategoryController {
 
     private final CategoryService categoryService;
 
+    /**
+     * http://localhost:8080/category/categoryName?categoryName=전자기기
+     */
     @GetMapping("/categoryName")
     public ResponseEntity<CategoryDto> findByName
-            (@RequestBody String categoryName) {
+            (@RequestParam String categoryName) {
         CategoryDto byName = categoryService.findByName(categoryName);
         return ResponseEntity.ok(byName);
     }
 
+    /**
+     *http://localhost:8080/category/categoryAllName
+     */
     @GetMapping("/categoryAllName")
     public ResponseEntity<List<CategoryDto>> allCategories() {
         try {
@@ -38,6 +44,12 @@ public class CategoryController {
         }
     }
 
+    /**
+     * http://localhost:8080/category/category/1
+     * @param id
+     * @return
+     */
+    @GetMapping("/category/{id}")
     public ResponseEntity<CategoryDto> getCategoryById(@PathVariable Long id) {
         try {
             CategoryDto categoryById = categoryService.getCategoryById(id);
@@ -47,6 +59,7 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
+
 
     @PostMapping("/create")
     public ResponseEntity<CategoryDto> createCategory(@RequestBody CategoryDto categoryDto) {
@@ -59,6 +72,9 @@ public class CategoryController {
         }
     }
 
+    /*
+    http://localhost:8080/category/updateCategory?id=1
+     */
     @PostMapping("/updateCategory")
     public ResponseEntity<CategoryDto> updateCategory(
             @RequestParam Long id, @RequestBody CategoryDto categoryDto) {
