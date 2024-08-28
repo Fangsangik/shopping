@@ -71,19 +71,23 @@ public class BucketService {
 
 
     @Transactional
-    public BucketDto addItemToBucket(Long memberId, Long itemId, int quantity) {
+    public BucketDto addItemToBucket(Long memberId, String itemName, int quantity) {
         if (memberId == null) {
             throw new CustomError(INVALID_INPUT_VALUE);
         }
-        if (itemId == null) {
+        if (itemName == null) {
             throw new CustomError(INVALID_INPUT_VALUE);
         }
         if (quantity <= 0) {
             throw new CustomError(ErrorCode.MUST_OVER_THAN_ZERO);
         }
 
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new CustomError(ITEM_NOT_FOUND));
+        List<Item> items = itemRepository.findByItemName(itemName);
+        if (items.isEmpty()) {
+            throw new CustomError(ErrorCode.ITEM_NOT_FOUND);
+        }
+
+        Item item = items.get(0); // 일치하는 첫 번째 아이템 선택
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomError(USER_NOT_FOUND));
