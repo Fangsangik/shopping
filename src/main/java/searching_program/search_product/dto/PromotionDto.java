@@ -16,4 +16,6 @@ public class PromotionDto {
     private Long discountRate;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
+    private String couponCode; // 고유 번호(쿠폰 코드) 추가
+
 }
