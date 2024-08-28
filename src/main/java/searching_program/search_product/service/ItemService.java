@@ -105,6 +105,26 @@ public class ItemService {
         return converter.convertToItemDto(findItem);
     }
 
+    @Transactional(readOnly = true)
+    public ItemDto getItemWithPromotion(Long itemId) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new CustomError(ITEM_NOT_FOUND));
+
+        Promotion activePromotion = promotionRepository.findFirstByItemAndStartDateLessThanEqualAndEndDateGreaterThanEqual
+                (item, LocalDateTime.now(), LocalDateTime.now());
+
+        double finalPrice = item.getItemPrice();
+        if (activePromotion != null) {
+            // 프로모션이 적용된 할인된 가격 계산
+            finalPrice = calculateDiscountedPrice(item.getId(), activePromotion.getDiscountRate());
+        }
+
+        ItemDto itemDto = converter.convertToItemDto(item);
+        itemDto.setDiscountedPrice(finalPrice); // 할인된 가격을 DTO에 설정
+
+        return itemDto;
+    }
+
     /**
      * TODO :
      * Specification -> JPA에서 동적 쿼리를 작성할 수 있도록 지원하는 인터페이스
