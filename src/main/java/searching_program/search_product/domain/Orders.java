@@ -1,10 +1,9 @@
 package searching_program.search_product.domain;
 
 
+import jakarta.persistence.*;
 import lombok.*;
 import searching_program.search_product.type.OrderStatus;
-
-import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

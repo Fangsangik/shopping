@@ -1,19 +1,14 @@
 package searching_program.search_product.service;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import searching_program.search_product.domain.Member;
-import searching_program.search_product.dto.DtoEntityConverter;
 import searching_program.search_product.dto.MemberDto;
 import searching_program.search_product.error.CustomError;
-import searching_program.search_product.repository.MemberRepository;
-import searching_program.search_product.type.ErrorCode;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -70,7 +65,7 @@ public class LoginService {
      * @param memberId 회원 ID
      */
     @Transactional
-    private void incrementLoginAttempts(Long memberId) {
+    protected void incrementLoginAttempts(Long memberId) {
         int attempts = loginAttempts.getOrDefault(memberId, 0);
         loginAttempts.put(memberId, attempts + 1);
 

@@ -1,13 +1,11 @@
 package searching_program.search_product.domain;
 
+import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Columns;
 import org.springframework.format.annotation.DateTimeFormat;
 import searching_program.search_product.type.Grade;
 import searching_program.search_product.type.MemberStatus;
 import searching_program.search_product.type.PaymentMethod;
-
-import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;

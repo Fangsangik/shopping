@@ -1,5 +1,6 @@
 package searching_program.search_product.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -10,8 +11,9 @@ import searching_program.search_product.dto.MemberDto;
 import searching_program.search_product.error.CustomError;
 import searching_program.search_product.service.MemberService;
 
-import javax.validation.Valid;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @RestController

@@ -1,11 +1,12 @@
 package searching_program.search_product.domain;
 
+import jakarta.persistence.*;
 import lombok.*;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
-import static javax.persistence.GenerationType.IDENTITY;
+import static jakarta.persistence.GenerationType.IDENTITY;
+
 
 @Getter
 @Setter
@@ -16,7 +17,8 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Table(name = "tblBucket")
 public class Bucket {
 
-    @Id @GeneratedValue(strategy = IDENTITY)
+    @Id
+    @GeneratedValue(strategy = IDENTITY)
     private Long id;
 
     @ManyToOne

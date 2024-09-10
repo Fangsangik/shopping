@@ -1,9 +1,8 @@
 package searching_program.search_product.domain;
 
+import jakarta.persistence.*;
 import lombok.*;
 import searching_program.search_product.type.ShipmentStatus;
-
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity

@@ -1,9 +1,8 @@
 package searching_program.search_product.domain;
 
+import jakarta.persistence.*;
 import lombok.*;
 import searching_program.search_product.type.PaymentStatus;
-
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,7 +15,7 @@ import java.time.LocalDateTime;
 public class Payment {
 
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne

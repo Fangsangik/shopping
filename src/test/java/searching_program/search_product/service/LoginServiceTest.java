@@ -1,6 +1,7 @@
 package searching_program.search_product.service;
 
-import org.junit.jupiter.api.Assertions;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,16 +9,12 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import searching_program.search_product.domain.Member;
 import searching_program.search_product.dto.DtoEntityConverter;
 import searching_program.search_product.dto.MemberDto;
 import searching_program.search_product.error.CustomError;
 import searching_program.search_product.repository.MemberRepository;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;

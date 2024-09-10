@@ -1,5 +1,6 @@
 package searching_program.search_product.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -13,7 +14,7 @@ import searching_program.search_product.dto.*;
 import searching_program.search_product.service.ItemService;
 import searching_program.search_product.service.OrderService;
 
-import javax.validation.Valid;
+
 import java.util.List;
 
 @Slf4j
