@@ -1,19 +1,14 @@
 package searching_program.search_product.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import searching_program.search_product.dto.MemberDto;
-import searching_program.search_product.error.CustomError;
 import searching_program.search_product.service.LoginService;
-import searching_program.search_product.service.MemberService;
 
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import java.util.Optional;
 
 
@@ -24,7 +19,6 @@ import java.util.Optional;
 public class CustomLoginController {
 
     private final LoginService loginService;
-    private final MemberService memberService;
 
     @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestParam String userId,
